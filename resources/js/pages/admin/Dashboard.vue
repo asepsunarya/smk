@@ -8,7 +8,7 @@
             Dashboard Administrator
           </h2>
           <p class="mt-1 text-sm text-gray-500">
-            Selamat datang di Sistem Informasi Akademik SMK Progresia Cianjur
+            Selamat datang di Pengolahan Nilai Rapor Kurikulum Merdeka
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
-# SIAKAD SMK - Sistem Informasi Akademik Kurikulum Merdeka
+# PNRKM - Pengolahan Nilai Rapor Kurikulum Merdeka
 
-Sistem Informasi Pengolahan Nilai Rapor Kurikulum Merdeka berbasis website untuk SMK Progresia Cianjur.
+Sistem Pengolahan Nilai Rapor Kurikulum Merdeka berbasis website untuk institusi pendidikan SMK.
 
 ## 🚀 Tech Stack
 
@@ -104,7 +104,7 @@ Sistem ini mengimplementasikan ERD dengan 21 tabel utama:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd siakad-smk
+   cd pnrkm
    ```
 
 2. **Install PHP dependencies**
@@ -128,7 +128,7 @@ Sistem ini mengimplementasikan ERD dengan 21 tabel utama:
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
-   DB_DATABASE=siakad_smk
+   DB_DATABASE=pnrkm
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
    ```
@@ -163,6 +163,7 @@ After running the seeders, you can use these demo accounts:
 | Admin | admin@demo.com | password |
 | Guru | guru@demo.com | password |
 | Siswa | siswa@demo.com | password |
+| Kepala Sekolah | kepalasekolah@demo.com | password
 
 ## 🏛️ System Architecture
 
@@ -260,9 +261,9 @@ php artisan test --coverage
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🏫 About SMK Progresia Cianjur
+## 🏫 About This System
 
-This system was developed specifically for SMK Progresia Cianjur to implement the Kurikulum Merdeka assessment system. The school offers various vocational programs including:
+This system was developed to implement the Kurikulum Merdeka assessment system for SMK institutions. The system supports various vocational programs including:
 
 - Rekayasa Perangkat Lunak (RPL)
 - Teknik Komputer dan Jaringan (TKJ)
@@ -273,9 +274,7 @@ This system was developed specifically for SMK Progresia Cianjur to implement th
 
 ## 📞 Support
 
-For support, please contact:
-- Email: admin@smkprogresia.sch.id
-- Phone: +62 xxx xxxx xxxx
+For support and inquiries about this system, please contact the development team.
 
 ---
 

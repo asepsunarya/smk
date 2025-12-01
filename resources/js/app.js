@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import axios from 'axios'
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
+import '../css/app.css'
 import './bootstrap'
 
 // Import main layout

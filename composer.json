@@ -1,8 +1,8 @@
 {
-    "name": "laravel/siakad-smk",
+    "name": "laravel/pnrkm",
     "type": "project",
-    "description": "Sistem Informasi Pengolahan Nilai Rapor Kurikulum Merdeka",
-    "keywords": ["laravel", "framework", "siakad", "smk"],
+    "description": "Pengolahan Nilai Rapor Kurikulum Merdeka",
+    "keywords": ["laravel", "framework", "rapor", "kurikulum-merdeka"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
