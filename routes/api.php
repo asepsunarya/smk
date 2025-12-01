@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\Admin\SiswaController;
 use App\Http\Controllers\Api\Admin\GuruController;
+use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\KelasController;
 use App\Http\Controllers\Api\Admin\JurusanController;
 use App\Http\Controllers\Api\Admin\MataPelajaranController;
@@ -60,6 +61,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('guru/{guru}/schedule', [GuruController::class, 'schedule']);
         Route::post('guru/{guru}/reset-password', [GuruController::class, 'resetPassword']);
         Route::post('guru/{guru}/toggle-status', [GuruController::class, 'toggleStatus']);
+
+        Route::apiResource('user', UserController::class);
+        Route::post('user/{user}/reset-password', [UserController::class, 'resetPassword']);
+        Route::post('user/{user}/toggle-status', [UserController::class, 'toggleStatus']);
 
         Route::apiResource('kelas', KelasController::class);
         Route::post('kelas/{kelas}/assign-wali', [KelasController::class, 'assignWali']);

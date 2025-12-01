@@ -139,7 +139,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useSlots } from 'vue'
+
+const slots = useSlots()
 
 const props = defineProps({
   title: {
@@ -191,7 +193,7 @@ const sortKey = ref('')
 const sortOrder = ref('asc')
 const currentPage = ref(1)
 
-const hasActions = computed(() => !!props.columns.find(col => col.key === 'actions') || !!$slots.actions)
+const hasActions = computed(() => props.columns.some(col => col.key === 'actions') || !!slots['row-actions'])
 
 const filteredData = computed(() => {
   let result = [...props.data]

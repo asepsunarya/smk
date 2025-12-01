@@ -23,6 +23,7 @@ import GuruForm from './pages/admin/guru/Form.vue'
 import KelasIndex from './pages/admin/kelas/Index.vue'
 import JurusanIndex from './pages/admin/jurusan/Index.vue'
 import MataPelajaranIndex from './pages/admin/mata-pelajaran/Index.vue'
+import UserIndex from './pages/admin/user/Index.vue'
 
 // Guru pages
 import GuruDashboard from './pages/guru/Dashboard.vue'
@@ -141,6 +142,11 @@ const routes = [
         path: 'mata-pelajaran',
         name: 'admin.mata-pelajaran.index',
         component: MataPelajaranIndex
+      },
+      {
+        path: 'user',
+        name: 'admin.user.index',
+        component: UserIndex
       }
     ]
   },
