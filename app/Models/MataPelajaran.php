@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * MataPelajaran Model
- * 
+ *
  * Represents subjects taught in the school
  */
 class MataPelajaran extends Model
@@ -19,8 +19,9 @@ class MataPelajaran extends Model
     protected $fillable = [
         'kode_mapel',
         'nama_mapel',
-        'kelompok',
         'kkm',
+        'guru_id',
+        'kelas_id',
         'is_active',
     ];
 
@@ -29,13 +30,6 @@ class MataPelajaran extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the jadwal pelajaran for this mata pelajaran.
-     */
-    public function jadwalPelajaran()
-    {
-        return $this->hasMany(JadwalPelajaran::class);
-    }
 
     /**
      * Get the capaian pembelajaran.
@@ -58,8 +52,7 @@ class MataPelajaran extends Model
      */
     public function guru()
     {
-        return $this->belongsToMany(Guru::class, 'jadwal_pelajaran')
-                    ->distinct();
+        return $this->belongsTo(Guru::class);
     }
 
     /**
@@ -67,8 +60,7 @@ class MataPelajaran extends Model
      */
     public function kelas()
     {
-        return $this->belongsToMany(Kelas::class, 'jadwal_pelajaran')
-                    ->distinct();
+        return $this->belongsTo(Kelas::class);
     }
 
     /**
@@ -80,18 +72,6 @@ class MataPelajaran extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope a query to filter by kelompok.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string  $kelompok
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeKelompok($query, $kelompok)
-    {
-        return $query->where('kelompok', $kelompok);
     }
 
     /**

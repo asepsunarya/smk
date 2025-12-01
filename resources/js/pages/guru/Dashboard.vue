@@ -94,36 +94,8 @@
         </div>
       </div>
 
-      <!-- Today's Schedule & Recent Activity -->
+      <!-- Recent Activity -->
       <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Today's Schedule -->
-        <div class="bg-white shadow rounded-lg">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Jadwal Mengajar Hari Ini</h3>
-            <div class="mt-6">
-              <div v-if="todaySchedule.length" class="space-y-4">
-                <div v-for="jadwal in todaySchedule" :key="jadwal.id" class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                      <p class="text-sm font-medium text-gray-900">{{ jadwal.kelas?.nama_kelas }}</p>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {{ jadwal.jam_mulai }} - {{ jadwal.jam_selesai }}
-                      </span>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-1">Ruangan: {{ jadwal.ruangan }}</p>
-                    <p class="text-sm text-gray-500">{{ jadwal.mata_pelajaran?.nama_mapel }}</p>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-center py-8">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <p class="mt-2 text-sm text-gray-500">Tidak ada jadwal mengajar hari ini</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Classes Taught -->
         <div class="bg-white shadow rounded-lg">
@@ -320,7 +292,6 @@ const authStore = useAuthStore()
 const toast = useToast()
 
 const stats = ref({})
-const todaySchedule = ref([])
 const classes = ref([])
 const recentGrades = ref([])
 const cpProgress = ref([])
@@ -330,7 +301,6 @@ const fetchDashboardData = async () => {
   try {
     const response = await axios.get('/dashboard/guru')
     stats.value = response.data.stats || {}
-    todaySchedule.value = response.data.today_schedule || []
     classes.value = response.data.classes || []
     recentGrades.value = response.data.recent_grades || []
     cpProgress.value = response.data.cp_progress || []

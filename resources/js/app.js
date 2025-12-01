@@ -24,6 +24,7 @@ import KelasIndex from './pages/admin/kelas/Index.vue'
 import JurusanIndex from './pages/admin/jurusan/Index.vue'
 import MataPelajaranIndex from './pages/admin/mata-pelajaran/Index.vue'
 import UserIndex from './pages/admin/user/Index.vue'
+import WaliKelasIndex from './pages/admin/wali-kelas/Index.vue'
 
 // Guru pages
 import GuruDashboard from './pages/guru/Dashboard.vue'
@@ -132,6 +133,11 @@ const routes = [
         path: 'kelas',
         name: 'admin.kelas.index',
         component: KelasIndex
+      },
+      {
+        path: 'wali-kelas',
+        name: 'admin.wali-kelas.index',
+        component: WaliKelasIndex
       },
       {
         path: 'jurusan',

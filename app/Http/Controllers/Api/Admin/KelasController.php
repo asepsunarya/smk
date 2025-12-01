@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Jurusan;
 use App\Models\User;
+use App\Models\WaliKelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -129,10 +130,8 @@ class KelasController extends Controller
     {
         $kelas->load([
             'jurusan',
-            'waliKelas',
+            'waliKelasAktif.guru.user',
             'siswa.user',
-            'jadwalPelajaran.mataPelajaran',
-            'jadwalPelajaran.guru.user',
         ]);
 
         // Add computed attributes
@@ -218,12 +217,6 @@ class KelasController extends Controller
             ], 422);
         }
 
-        // Prevent deleting kelas if it has jadwal pelajaran
-        if ($kelas->jadwalPelajaran()->exists()) {
-            return response()->json([
-                'message' => 'Kelas tidak dapat dihapus karena masih memiliki jadwal pelajaran.',
-            ], 422);
-        }
 
         DB::beginTransaction();
         try {
@@ -253,23 +246,50 @@ class KelasController extends Controller
     public function assignWali(Request $request, Kelas $kelas)
     {
         $request->validate([
-            'wali_kelas_id' => ['required', 'exists:users,id'],
+            'guru_id' => ['required', 'exists:guru,id'],
         ]);
 
-        $waliKelas = User::find($request->wali_kelas_id);
+        $guru = \App\Models\Guru::find($request->guru_id);
         
-        if (!$waliKelas || !in_array($waliKelas->role, ['wali_kelas', 'guru', 'kepala_sekolah'])) {
+        if (!$guru->user || !in_array($guru->user->role, ['wali_kelas', 'guru', 'kepala_sekolah'])) {
             return response()->json([
-                'message' => 'User yang dipilih harus memiliki role wali kelas, guru, atau kepala sekolah',
+                'message' => 'Guru yang dipilih harus memiliki role wali kelas, guru, atau kepala sekolah',
             ], 422);
         }
 
-        $kelas->update(['wali_kelas_id' => $request->wali_kelas_id]);
+        // Check if kelas already has active wali kelas
+        $existingWaliKelas = WaliKelas::where('kelas_id', $kelas->id)
+                                                  ->where('is_active', true)
+                                                  ->first();
 
-        return response()->json([
-            'message' => 'Wali kelas berhasil ditetapkan',
-            'data' => $kelas->fresh()->load('waliKelas'),
-        ]);
+        if ($existingWaliKelas) {
+            return response()->json([
+                'message' => 'Kelas sudah memiliki wali kelas aktif. Nonaktifkan wali kelas yang ada terlebih dahulu.',
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $waliKelas = WaliKelas::create([
+                'guru_id' => $request->guru_id,
+                'kelas_id' => $kelas->id,
+                'is_active' => true,
+                'tanggal_mulai' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Wali kelas berhasil ditetapkan',
+                'data' => $kelas->fresh()->load('waliKelasAktif.guru.user'),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menetapkan wali kelas',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

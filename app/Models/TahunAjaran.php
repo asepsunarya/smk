@@ -26,13 +26,6 @@ class TahunAjaran extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the jadwal pelajaran for this tahun ajaran.
-     */
-    public function jadwalPelajaran()
-    {
-        return $this->hasMany(JadwalPelajaran::class);
-    }
 
     /**
      * Get the nilai for this tahun ajaran.

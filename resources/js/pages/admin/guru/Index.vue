@@ -63,11 +63,6 @@
 
         <template #row-actions="{ item }">
           <div class="flex items-center space-x-2">
-            <button @click="viewSchedule(item)" class="text-green-600 hover:text-green-900" title="Jadwal Mengajar">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-            </button>
             <button @click="editGuru(item)" class="text-blue-600 hover:text-blue-900" title="Edit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -271,37 +266,6 @@
         </template>
       </Modal>
 
-      <!-- Schedule Modal -->
-      <Modal v-model:show="showScheduleModal" :title="`Jadwal Mengajar - ${selectedGuru?.nama_lengkap}`" size="lg">
-        <div v-if="loadingSchedule" class="p-8 text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p class="mt-2 text-sm text-gray-500">Memuat jadwal...</p>
-        </div>
-        <div v-else-if="scheduleData && Object.keys(scheduleData).length > 0" class="space-y-4">
-          <div v-for="(jadwal, hari) in scheduleData" :key="hari" class="border rounded-lg p-4">
-            <h3 class="font-medium text-gray-900 mb-3">{{ getDayName(hari) }}</h3>
-            <div class="space-y-2">
-              <div v-for="item in jadwal" :key="item.id" class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <div>
-                  <div class="text-sm font-medium text-gray-900">{{ item.mata_pelajaran?.nama_mapel }}</div>
-                  <div class="text-xs text-gray-500">{{ item.kelas?.nama_kelas }}</div>
-                </div>
-                <div class="text-sm text-gray-600">
-                  {{ formatTime(item.jam_mulai) }} - {{ formatTime(item.jam_selesai) }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="p-8 text-center">
-          <p class="text-gray-500">Belum ada jadwal mengajar</p>
-        </div>
-
-        <template #footer>
-          <button @click="showScheduleModal = false" class="btn btn-secondary">Tutup</button>
-        </template>
-      </Modal>
-
       <!-- Confirmation Dialogs -->
       <ConfirmDialog
         v-model:show="showDeleteConfirm"
@@ -339,9 +303,7 @@ const toast = useToast()
 
 // Data
 const guru = ref([])
-const scheduleData = ref({})
 const loading = ref(true)
-const loadingSchedule = ref(false)
 const submitting = ref(false)
 const deleting = ref(false)
 const resettingPassword = ref(false)
@@ -352,7 +314,6 @@ const showForm = ref(false)
 const showDeleteConfirm = ref(false)
 const showToggleStatusConfirm = ref(false)
 const showResetPasswordModal = ref(false)
-const showScheduleModal = ref(false)
 const isEditing = ref(false)
 const selectedGuru = ref(null)
 
@@ -575,25 +536,6 @@ const confirmToggleStatus = async () => {
   }
 }
 
-const viewSchedule = async (guruItem) => {
-  selectedGuru.value = guruItem
-  showScheduleModal.value = true
-  await fetchSchedule(guruItem.id)
-}
-
-const fetchSchedule = async (guruId) => {
-  try {
-    loadingSchedule.value = true
-    const response = await axios.get(`/admin/guru/${guruId}/schedule`)
-    scheduleData.value = response.data
-  } catch (error) {
-    toast.error('Gagal mengambil jadwal mengajar')
-    console.error(error)
-  } finally {
-    loadingSchedule.value = false
-  }
-}
-
 const handleSearch = (searchTerm) => {
   filters.search = searchTerm
   fetchGuru()
@@ -633,25 +575,6 @@ const getStatusBadge = (status) => {
     pensiun: 'bg-gray-100 text-gray-800'
   }
   return badges[status] || 'bg-gray-100 text-gray-800'
-}
-
-const getDayName = (day) => {
-  const days = {
-    'Senin': 'Senin',
-    'Selasa': 'Selasa',
-    'Rabu': 'Rabu',
-    'Kamis': 'Kamis',
-    'Jumat': 'Jumat',
-    'Sabtu': 'Sabtu',
-    'Minggu': 'Minggu'
-  }
-  return days[day] || day
-}
-
-const formatTime = (time) => {
-  if (!time) return '-'
-  const [hours, minutes] = time.split(':')
-  return `${hours}:${minutes}`
 }
 
 // Lifecycle

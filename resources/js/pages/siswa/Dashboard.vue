@@ -154,38 +154,6 @@
           </div>
         </div>
 
-        <!-- Today's Schedule -->
-        <div class="bg-white shadow rounded-lg">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Jadwal Hari Ini</h3>
-            <div class="mt-6">
-              <div v-if="todaySchedule.length" class="space-y-4">
-                <div v-for="jadwal in todaySchedule" :key="jadwal.id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">
-                      {{ jadwal.mata_pelajaran?.nama_mapel }}
-                    </p>
-                    <p class="text-sm text-gray-500">
-                      {{ jadwal.guru?.nama_lengkap }}
-                    </p>
-                  </div>
-                  <div class="flex-shrink-0 text-right">
-                    <p class="text-sm font-medium text-gray-900">{{ jadwal.jam_mulai }} - {{ jadwal.jam_selesai }}</p>
-                    <p class="text-sm text-gray-500">{{ jadwal.ruangan }}</p>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-center py-4">
-                <p class="text-sm text-gray-500">Tidak ada jadwal hari ini</p>
-              </div>
-            </div>
-            <div class="mt-6">
-              <router-link to="/siswa/jadwal" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                Lihat jadwal lengkap →
-              </router-link>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Quick Actions -->
@@ -236,27 +204,6 @@
             </div>
           </router-link>
 
-          <router-link 
-            to="/siswa/jadwal"
-            class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-yellow-500 rounded-lg shadow hover:shadow-md transition-shadow"
-          >
-            <div>
-              <span class="rounded-lg inline-flex p-3 bg-yellow-50 text-yellow-600 ring-4 ring-white">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </span>
-            </div>
-            <div class="mt-8">
-              <h3 class="text-lg font-medium">
-                <span class="absolute inset-0" aria-hidden="true"></span>
-                Jadwal Pelajaran
-              </h3>
-              <p class="mt-2 text-sm text-gray-500">
-                Lihat jadwal pelajaran minggu ini
-              </p>
-            </div>
-          </router-link>
         </div>
       </div>
     </div>
@@ -275,7 +222,6 @@ const toast = useToast()
 const profile = ref({})
 const stats = ref({})
 const recentGrades = ref([])
-const todaySchedule = ref([])
 const loading = ref(true)
 
 const fetchDashboardData = async () => {
@@ -284,7 +230,6 @@ const fetchDashboardData = async () => {
     profile.value = response.data.profile || {}
     stats.value = response.data.stats || {}
     recentGrades.value = response.data.recent_grades || []
-    todaySchedule.value = response.data.today_schedule || []
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
     toast.error('Gagal mengambil data dashboard')

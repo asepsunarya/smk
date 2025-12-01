@@ -25,7 +25,7 @@ class GuruController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Guru::with(['user', 'jadwalPelajaran.mataPelajaran', 'jadwalPelajaran.kelas']);
+        $query = Guru::with(['user']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -127,17 +127,9 @@ class GuruController extends Controller
     {
         $guru->load([
             'user',
-            'jadwalPelajaran.mataPelajaran',
-            'jadwalPelajaran.kelas',
             'ekstrakurikuler',
             'pklAsPembimbing.siswa',
             'p5AsKoordinator',
-        ]);
-
-        $guru->loadCount([
-            'jadwalPelajaran as total_jam_mengajar' => function ($query) {
-                $query->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, jam_mulai, jam_selesai) / 60)');
-            },
         ]);
 
         if ($guru->user->role === 'wali_kelas') {
@@ -206,11 +198,6 @@ class GuruController extends Controller
      */
     public function destroy(Guru $guru)
     {
-        if ($guru->jadwalPelajaran()->exists()) {
-            return response()->json([
-                'message' => 'Guru tidak dapat dihapus karena masih memiliki jadwal mengajar',
-            ], 422);
-        }
 
         DB::beginTransaction();
         try {
@@ -232,26 +219,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Get teaching schedule for guru.
-     *
-     * @param  Guru  $guru
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function schedule(Guru $guru)
-    {
-        $jadwal = $guru->jadwalPelajaran()
-            ->with(['mataPelajaran', 'kelas.jurusan'])
-            ->whereHas('tahunAjaran', function ($q) {
-                $q->where('is_active', true);
-            })
-            ->orderBy('hari')
-            ->orderBy('jam_mulai')
-            ->get()
-            ->groupBy('hari');
-
-        return response()->json($jadwal);
-    }
 
     /**
      * Reset password for guru.

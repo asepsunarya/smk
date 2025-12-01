@@ -45,13 +45,6 @@ class Guru extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the jadwal pelajaran.
-     */
-    public function jadwalPelajaran()
-    {
-        return $this->hasMany(JadwalPelajaran::class);
-    }
 
     /**
      * Get the nilai that this guru inputs.
@@ -104,22 +97,29 @@ class Guru extends Model
         return $query->where('status', 'aktif');
     }
 
+
     /**
      * Get the mata pelajaran that this guru teaches.
      */
     public function mataPelajaran()
     {
-        return $this->belongsToMany(MataPelajaran::class, 'jadwal_pelajaran')
-                    ->distinct();
+        return $this->hasMany(MataPelajaran::class);
     }
 
     /**
-     * Get the kelas that this guru teaches.
+     * Get the wali kelas assignments.
      */
-    public function kelas()
+    public function waliKelas()
     {
-        return $this->belongsToMany(Kelas::class, 'jadwal_pelajaran')
-                    ->distinct();
+        return $this->hasMany(WaliKelas::class);
+    }
+
+    /**
+     * Get active wali kelas assignments.
+     */
+    public function waliKelasAktif()
+    {
+        return $this->hasMany(WaliKelas::class)->where('is_active', true);
     }
 
     /**
@@ -129,17 +129,17 @@ class Guru extends Model
      */
     public function isWaliKelas()
     {
-        return $this->user->kelasAsWali()->exists();
+        return $this->waliKelasAktif()->exists();
     }
 
     /**
-     * Get the kelas where this guru is wali kelas.
+     * Get the kelas where this guru is currently wali kelas.
      *
-     * @return \App\Models\Kelas|null
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getKelasAsWaliAttribute()
     {
-        return $this->user->kelasAsWali()->first();
+        return $this->waliKelasAktif()->with('kelas')->get()->pluck('kelas');
     }
 
     /**

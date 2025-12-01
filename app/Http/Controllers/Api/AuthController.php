@@ -124,7 +124,7 @@ class AuthController extends Controller
         if ($user->role === 'siswa' && $user->siswa) {
             $profileData = $user->siswa->load('kelas.jurusan');
         } elseif (in_array($user->role, ['guru', 'wali_kelas']) && $user->guru) {
-            $profileData = $user->guru->load(['jadwalPelajaran.mataPelajaran', 'jadwalPelajaran.kelas']);
+            $profileData = $user->guru;
             
             if ($user->role === 'wali_kelas') {
                 $profileData->load('user.kelasAsWali.siswa');

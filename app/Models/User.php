@@ -72,11 +72,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the classes where user is wali kelas.
+     * Get the classes where user is wali kelas (through guru).
      */
     public function kelasAsWali()
     {
-        return $this->hasMany(Kelas::class, 'wali_kelas_id');
+        if (!$this->guru) {
+            return collect();
+        }
+        
+        return $this->guru->waliKelasAktif()->with('kelas')->get()->pluck('kelas');
     }
 
     /**

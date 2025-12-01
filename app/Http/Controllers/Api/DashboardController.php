@@ -67,37 +67,11 @@ class DashboardController extends Controller
         $tahunAjaran = TahunAjaran::where('is_active', true)->first();
 
         $stats = [
-            'total_kelas' => $guru->jadwalPelajaran()
-                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                ->distinct('kelas_id')
-                ->count('kelas_id'),
-            'total_mapel' => $guru->jadwalPelajaran()
-                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                ->distinct('mata_pelajaran_id')
-                ->count('mata_pelajaran_id'),
-            'total_siswa' => DB::table('jadwal_pelajaran')
-                ->join('kelas', 'jadwal_pelajaran.kelas_id', '=', 'kelas.id')
-                ->join('siswa', 'kelas.id', '=', 'siswa.kelas_id')
-                ->where('jadwal_pelajaran.guru_id', $guru->id)
-                ->where('jadwal_pelajaran.tahun_ajaran_id', $tahunAjaran->id)
-                ->where('siswa.status', 'aktif')
-                ->distinct('siswa.id')
-                ->count('siswa.id'),
-            'nilai_belum_input' => DB::table('jadwal_pelajaran')
-                ->leftJoin('nilai', function ($join) use ($tahunAjaran) {
-                    $join->on('jadwal_pelajaran.mata_pelajaran_id', '=', 'nilai.mata_pelajaran_id')
-                         ->on('jadwal_pelajaran.tahun_ajaran_id', '=', 'nilai.tahun_ajaran_id');
-                })
-                ->where('jadwal_pelajaran.guru_id', $guru->id)
-                ->where('jadwal_pelajaran.tahun_ajaran_id', $tahunAjaran->id)
-                ->whereNull('nilai.id')
-                ->count(),
-            'jadwal_hari_ini' => $guru->jadwalPelajaran()
-                ->with(['kelas', 'mataPelajaran'])
-                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                ->where('hari', $this->getDayName())
-                ->orderBy('jam_mulai')
-                ->get(),
+            'total_kelas' => 0,
+            'total_mapel' => 0,
+            'total_siswa' => 0,
+            'nilai_belum_input' => 0,
+            'jadwal_hari_ini' => [],
             'recent_nilai' => Nilai::with(['siswa', 'mataPelajaran'])
                 ->where('guru_id', $guru->id)
                 ->where('tahun_ajaran_id', $tahunAjaran->id)
@@ -285,13 +259,7 @@ class DashboardController extends Controller
             'rapor' => $siswa->rapor()
                 ->where('tahun_ajaran_id', $tahunAjaran->id)
                 ->first(),
-            'jadwal' => $siswa->kelas->jadwalPelajaran()
-                ->with(['mataPelajaran', 'guru.user'])
-                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                ->orderBy('hari')
-                ->orderBy('jam_mulai')
-                ->get()
-                ->groupBy('hari'),
+            'jadwal' => [],
         ];
 
         return response()->json($stats);

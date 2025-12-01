@@ -20,7 +20,6 @@ class Kelas extends Model
         'nama_kelas',
         'tingkat',
         'jurusan_id',
-        'wali_kelas_id',
         'kapasitas',
     ];
 
@@ -37,11 +36,27 @@ class Kelas extends Model
     }
 
     /**
-     * Get the wali kelas (homeroom teacher).
+     * Get the wali kelas (homeroom teacher) assignments.
      */
     public function waliKelas()
     {
-        return $this->belongsTo(User::class, 'wali_kelas_id');
+        return $this->hasMany(WaliKelas::class);
+    }
+
+    /**
+     * Get the current active wali kelas.
+     */
+    public function waliKelasAktif()
+    {
+        return $this->hasOne(WaliKelas::class)->where('is_active', true);
+    }
+
+    /**
+     * Get the mata pelajaran taught in this kelas.
+     */
+    public function mataPelajaran()
+    {
+        return $this->hasMany(MataPelajaran::class);
     }
 
     /**
@@ -52,13 +67,6 @@ class Kelas extends Model
         return $this->hasMany(Siswa::class);
     }
 
-    /**
-     * Get the jadwal pelajaran for this kelas.
-     */
-    public function jadwalPelajaran()
-    {
-        return $this->hasMany(JadwalPelajaran::class);
-    }
 
     /**
      * Get the rapor for this kelas.

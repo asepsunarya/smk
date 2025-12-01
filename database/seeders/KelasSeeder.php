@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Kelas;
 use App\Models\Jurusan;
-use App\Models\User;
 
 class KelasSeeder extends Seeder
 {
@@ -15,9 +14,6 @@ class KelasSeeder extends Seeder
     public function run(): void
     {
         $jurusan = Jurusan::all()->keyBy('kode_jurusan');
-        
-        // Get wali kelas users
-        $waliKelas = User::where('role', 'wali_kelas')->get();
 
         $kelasData = [
             // RPL Classes
@@ -57,15 +53,13 @@ class KelasSeeder extends Seeder
             ['nama_kelas' => 'XII BDP 1', 'tingkat' => '12', 'jurusan' => 'BDP', 'kapasitas' => 26],
         ];
 
-        foreach ($kelasData as $index => $data) {
+        foreach ($kelasData as $data) {
             $jurusanId = $jurusan[$data['jurusan']]->id ?? null;
-            $waliKelasId = $waliKelas->get($index % $waliKelas->count())->id ?? null;
 
             Kelas::create([
                 'nama_kelas' => $data['nama_kelas'],
                 'tingkat' => $data['tingkat'],
                 'jurusan_id' => $jurusanId,
-                'wali_kelas_id' => $waliKelasId,
                 'kapasitas' => $data['kapasitas'],
             ]);
         }

@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\Admin\KelasController;
 use App\Http\Controllers\Api\Admin\JurusanController;
 use App\Http\Controllers\Api\Admin\MataPelajaranController;
 use App\Http\Controllers\Api\Admin\TahunAjaranController;
-use App\Http\Controllers\Api\Admin\JadwalPelajaranController;
+use App\Http\Controllers\Api\Admin\WaliKelasController;
 use App\Http\Controllers\Api\Admin\EkstrakurikulerController;
 use App\Http\Controllers\Api\Guru\NilaiController as GuruNilaiController;
 use App\Http\Controllers\Api\Guru\CapaianPembelajaranController;
@@ -58,7 +58,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('siswa/{siswa}/reset-password', [SiswaController::class, 'resetPassword']);
 
         Route::apiResource('guru', GuruController::class);
-        Route::get('guru/{guru}/schedule', [GuruController::class, 'schedule']);
         Route::post('guru/{guru}/reset-password', [GuruController::class, 'resetPassword']);
         Route::post('guru/{guru}/toggle-status', [GuruController::class, 'toggleStatus']);
 
@@ -72,12 +71,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::apiResource('jurusan', JurusanController::class);
         Route::apiResource('mata-pelajaran', MataPelajaranController::class);
+        Route::post('mata-pelajaran/{mataPelajaran}/toggle-status', [MataPelajaranController::class, 'toggleStatus']);
         Route::apiResource('tahun-ajaran', TahunAjaranController::class);
         Route::post('tahun-ajaran/{tahunAjaran}/activate', [TahunAjaranController::class, 'activate']);
 
-        Route::apiResource('jadwal-pelajaran', JadwalPelajaranController::class);
-        Route::get('jadwal/kelas/{kelas}', [JadwalPelajaranController::class, 'byKelas']);
-        Route::get('jadwal/guru/{guru}', [JadwalPelajaranController::class, 'byGuru']);
+        Route::apiResource('wali-kelas', WaliKelasController::class);
+        Route::get('wali-kelas/guru/{guru}/kelas', [WaliKelasController::class, 'getKelas']);
+        Route::post('wali-kelas/assign', [WaliKelasController::class, 'assign']);
+        Route::post('wali-kelas/remove', [WaliKelasController::class, 'remove']);
 
         Route::apiResource('ekstrakurikuler', EkstrakurikulerController::class);
         Route::post('ekstrakurikuler/{ekstrakurikuler}/assign-pembina', [EkstrakurikulerController::class, 'assignPembina']);
@@ -159,9 +160,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('nilai', [NilaiSiswaController::class, 'index']);
         Route::get('nilai/tahun-ajaran/{tahunAjaran}', [NilaiSiswaController::class, 'byTahunAjaran']);
         Route::get('nilai/detail/{nilai}', [NilaiSiswaController::class, 'show']);
-
-        // View Schedule
-        Route::get('jadwal', [NilaiSiswaController::class, 'jadwal']);
 
         // View Kehadiran
         Route::get('kehadiran', [NilaiSiswaController::class, 'kehadiran']);

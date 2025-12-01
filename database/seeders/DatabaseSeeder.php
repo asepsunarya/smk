@@ -19,11 +19,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             GuruSeeder::class,
             KelasSeeder::class,
+            WaliKelasSeeder::class,
             SiswaSeeder::class,
             EkstrakurikulerSeeder::class,
             CapaianPembelajaranSeeder::class,
             TujuanPembelajaranSeeder::class,
-            JadwalPelajaranSeeder::class,
             // Add more seeders as needed
         ]);
     }

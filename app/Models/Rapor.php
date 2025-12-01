@@ -212,13 +212,9 @@ class Rapor extends Model
      */
     public function isComplete()
     {
-        $expectedSubjects = $this->kelas->jadwalPelajaran()
-                                 ->where('tahun_ajaran_id', $this->tahun_ajaran_id)
-                                 ->distinct('mata_pelajaran_id')
-                                 ->count('mata_pelajaran_id');
-
+        // Check if all required data is present
         $enteredGrades = $this->nilai->count();
 
-        return $enteredGrades >= $expectedSubjects && $this->kehadiran && $this->catatan_akademik;
+        return $enteredGrades > 0 && $this->kehadiran && $this->catatan_akademik;
     }
 }
