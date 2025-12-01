@@ -14,13 +14,7 @@ export const menuConfig = {
         { label: 'Kelola Ekskul', to: '/admin/ekstrakurikuler', icon: 'star' },
         { label: 'Kelola P5', to: '/admin/p5', icon: 'lightbulb' },
         { label: 'Kelola PKL', to: '/admin/pkl', icon: 'briefcase' },
-        { label: 'Kelola UKK', to: '/admin/ukk', icon: 'clipboard-check' }
-      ]
-    },
-    {
-      type: 'section',
-      title: 'Pengaturan',
-      items: [
+        { label: 'Kelola UKK', to: '/admin/ukk', icon: 'clipboard-check' },
         { label: 'Tahun Ajaran', to: '/admin/tahun-ajaran', icon: 'calendar' }
       ]
     },

@@ -17,16 +17,12 @@ class Pkl extends Model
     protected $table = 'pkl';
 
     protected $fillable = [
-        'siswa_id',
         'nama_perusahaan',
         'alamat_perusahaan',
         'pembimbing_perusahaan',
-        'pembimbing_sekolah_id',
+        'pembimbing_sekolah',
         'tanggal_mulai',
         'tanggal_selesai',
-        'nilai_perusahaan',
-        'nilai_sekolah',
-        'keterangan',
         'tahun_ajaran_id',
     ];
 
@@ -35,21 +31,6 @@ class Pkl extends Model
         'tanggal_selesai' => 'date',
     ];
 
-    /**
-     * Get the siswa.
-     */
-    public function siswa()
-    {
-        return $this->belongsTo(Siswa::class);
-    }
-
-    /**
-     * Get the pembimbing sekolah.
-     */
-    public function pembimbingSekolah()
-    {
-        return $this->belongsTo(Guru::class, 'pembimbing_sekolah_id');
-    }
 
     /**
      * Get the tahun ajaran.
@@ -80,29 +61,6 @@ class Pkl extends Model
     }
 
     /**
-     * Get the final grade (average of company and school grades).
-     *
-     * @return string|null
-     */
-    public function getFinalGradeAttribute()
-    {
-        if (!$this->nilai_perusahaan || !$this->nilai_sekolah) {
-            return null;
-        }
-
-        $gradeValues = ['A' => 4, 'B' => 3, 'C' => 2, 'D' => 1];
-        $companyValue = $gradeValues[$this->nilai_perusahaan] ?? 0;
-        $schoolValue = $gradeValues[$this->nilai_sekolah] ?? 0;
-        
-        $average = ($companyValue + $schoolValue) / 2;
-
-        if ($average >= 3.5) return 'A';
-        if ($average >= 2.5) return 'B';
-        if ($average >= 1.5) return 'C';
-        return 'D';
-    }
-
-    /**
      * Get status of PKL.
      *
      * @return string
@@ -118,17 +76,5 @@ class Pkl extends Model
         } else {
             return 'Selesai';
         }
-    }
-
-    /**
-     * Check if PKL is completed.
-     *
-     * @return bool
-     */
-    public function isCompleted()
-    {
-        return now()->gt($this->tanggal_selesai) && 
-               $this->nilai_perusahaan && 
-               $this->nilai_sekolah;
     }
 }

@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * User Model
- * 
+ *
  * Handles authentication and user roles
  */
 class User extends Authenticatable
@@ -26,7 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'nip',
+        'nuptk',
         'nis',
         'is_active',
     ];

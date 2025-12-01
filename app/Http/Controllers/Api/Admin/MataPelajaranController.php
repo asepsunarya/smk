@@ -33,7 +33,7 @@ class MataPelajaranController extends Controller
                   ->orWhere('nama_mapel', 'like', "%{$search}%")
                   ->orWhereHas('guru', function ($qg) use ($search) {
                       $qg->where('nama_lengkap', 'like', "%{$search}%")
-                         ->orWhere('nip', 'like', "%{$search}%");
+                         ->orWhere('nuptk', 'like', "%{$search}%");
                   })
                   ->orWhereHas('kelas', function ($qk) use ($search) {
                       $qk->where('nama_kelas', 'like', "%{$search}%");

@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0" 
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col" 
          :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
       
       <!-- Logo -->
-      <div class="flex items-center justify-center h-16 px-4 bg-blue-600">
+      <div class="flex items-center justify-center h-16 px-4 bg-blue-600 flex-shrink-0">
         <div class="flex items-center">
           <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3">
             <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -19,8 +19,8 @@
         </div>
       </div>
 
-      <!-- Navigation -->
-      <nav class="mt-8 px-4 space-y-2">
+      <!-- Navigation (Scrollable) -->
+      <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         <!-- Dashboard -->
         <router-link 
           :to="getDashboardRoute()" 
@@ -74,7 +74,7 @@
       </nav>
 
       <!-- User Info -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+      <div class="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
         <div class="flex items-center">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
             {{ userInitials }}

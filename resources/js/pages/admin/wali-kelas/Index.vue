@@ -49,7 +49,7 @@
             </div>
             <div class="ml-4">
               <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
-              <div class="text-sm text-gray-500">{{ item.guru?.nip || item.email }}</div>
+              <div class="text-sm text-gray-500">{{ item.guru?.nuptk || item.email }}</div>
             </div>
           </div>
         </template>
@@ -167,7 +167,7 @@
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500">NIP</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ waliKelasDetail.guru?.nip || '-' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900">{{ waliKelasDetail.guru?.nuptk || '-' }}</dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Role</dt>
@@ -340,7 +340,7 @@ const fetchGuru = async () => {
         .filter(g => ['wali_kelas', 'guru', 'kepala_sekolah'].includes(g.user?.role))
         .map(g => ({
           id: g.id,
-          name: `${g.nama_lengkap}${g.nip ? ' - ' + g.nip : ''} (${formatRole(g.user?.role)})`,
+          name: `${g.nama_lengkap}${g.nuptk ? ' - ' + g.nuptk : ''} (${formatRole(g.user?.role)})`,
           ...g
         }))
     }

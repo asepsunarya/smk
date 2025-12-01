@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\MataPelajaranController;
 use App\Http\Controllers\Api\Admin\TahunAjaranController;
 use App\Http\Controllers\Api\Admin\WaliKelasController;
 use App\Http\Controllers\Api\Admin\EkstrakurikulerController;
+use App\Http\Controllers\Api\Admin\PklController;
 use App\Http\Controllers\Api\Guru\NilaiController as GuruNilaiController;
 use App\Http\Controllers\Api\Guru\CapaianPembelajaranController;
 use App\Http\Controllers\Api\Guru\P5Controller as GuruP5Controller;
@@ -81,7 +82,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('wali-kelas/remove', [WaliKelasController::class, 'remove']);
 
         Route::apiResource('ekstrakurikuler', EkstrakurikulerController::class);
+        Route::post('ekstrakurikuler/{ekstrakurikuler}/toggle-status', [EkstrakurikulerController::class, 'toggleStatus']);
         Route::post('ekstrakurikuler/{ekstrakurikuler}/assign-pembina', [EkstrakurikulerController::class, 'assignPembina']);
+
+        Route::apiResource('pkl', PklController::class);
     });
 
     // Guru routes

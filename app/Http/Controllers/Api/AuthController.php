@@ -74,7 +74,7 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:admin,guru,wali_kelas,kepala_sekolah,siswa'],
-            'nip' => ['nullable', 'string', 'unique:users'],
+            'nuptk' => ['nullable', 'string', 'unique:users'],
             'nis' => ['nullable', 'string', 'unique:users'],
         ]);
 
@@ -83,7 +83,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
-            'nip' => $request->nip,
+            'nuptk' => $request->nuptk,
             'nis' => $request->nis,
         ]);
 

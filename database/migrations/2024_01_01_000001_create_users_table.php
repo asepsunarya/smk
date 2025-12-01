@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'guru', 'wali_kelas', 'kepala_sekolah', 'siswa']);
-            $table->string('nip')->nullable()->unique();
+            $table->string('nuptk')->nullable()->unique();
             $table->string('nis')->nullable()->unique();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();

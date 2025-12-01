@@ -138,12 +138,12 @@
               :error="errors.password"
             />
             <FormField
-              v-if="needsNip"
-              v-model="form.nip"
-              label="NIP"
-              placeholder="Masukkan NIP"
-              :required="needsNip"
-              :error="errors.nip"
+              v-if="needsNuptk"
+              v-model="form.nuptk"
+              label="NUPTK"
+              placeholder="Masukkan NUPTK"
+              :required="needsNuptk"
+              :error="errors.nuptk"
             />
             <FormField
               v-if="needsNis"
@@ -264,7 +264,7 @@ const form = reactive({
   email: '',
   password: '',
   role: '',
-  nip: '',
+  nuptk: '',
   nis: '',
   is_active: true
 })
@@ -289,7 +289,7 @@ const columns = [
   { key: 'name', label: 'Nama & Email', sortable: true },
   { key: 'role', label: 'Role', sortable: true },
   { key: 'profile', label: 'Profile Terkait' },
-  { key: 'nip', label: 'NIP/NIS', sortable: true },
+  { key: 'nuptk', label: 'NUPTK/NIS', sortable: true },
   { key: 'is_active', label: 'Status', sortable: true }
 ]
 
@@ -308,7 +308,7 @@ const activeStatusOptions = [
 ]
 
 // Computed
-const needsNip = computed(() => {
+const needsNuptk = computed(() => {
   return ['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role)
 })
 
@@ -363,8 +363,8 @@ const closeForm = () => {
 }
 
 const handleRoleChange = () => {
-  // Clear NIP/NIS when role changes
-  form.nip = ''
+  // Clear NUPTK/NIS when role changes
+  form.nuptk = ''
   form.nis = ''
 }
 
@@ -374,7 +374,7 @@ const editUser = (user) => {
   form.name = user.name || ''
   form.email = user.email || ''
   form.role = user.role || ''
-  form.nip = user.nip || ''
+  form.nuptk = user.nuptk || ''
   form.nis = user.nis || ''
   form.is_active = user.is_active ?? true
   showForm.value = true

@@ -32,7 +32,7 @@ class WaliKelasController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('guru', function ($qu) use ($search) {
                     $qu->where('nama_lengkap', 'like', "%{$search}%")
-                      ->orWhere('nip', 'like', "%{$search}%")
+                      ->orWhere('nuptk', 'like', "%{$search}%")
                       ->orWhereHas('user', function ($qus) use ($search) {
                           $qus->where('name', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");

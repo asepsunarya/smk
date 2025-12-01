@@ -44,7 +44,7 @@
             </div>
             <div class="ml-4">
               <div class="text-sm font-medium text-gray-900">{{ item.nama_lengkap }}</div>
-              <div class="text-sm text-gray-500">NIP: {{ item.nip }}</div>
+              <div class="text-sm text-gray-500">NUPTK: {{ item.nuptk }}</div>
             </div>
           </div>
         </template>
@@ -95,11 +95,11 @@
         <form @submit.prevent="submitForm" id="guru-form" class="space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
-              v-model="form.nip"
+              v-model="form.nuptk"
               label="NIP"
               placeholder="Masukkan NIP"
               required
-              :error="errors.nip"
+              :error="errors.nuptk"
             />
             <FormField
               v-model="form.nama_lengkap"
@@ -319,7 +319,7 @@ const selectedGuru = ref(null)
 
 // Form data
 const form = reactive({
-  nip: '',
+  nuptk: '',
   nama_lengkap: '',
   email: '',
   password: '',
@@ -423,7 +423,7 @@ const closeForm = () => {
 const editGuru = (guruItem) => {
   isEditing.value = true
   selectedGuru.value = guruItem
-  form.nip = guruItem.nip || ''
+  form.nuptk = guruItem.nuptk || ''
   form.nama_lengkap = guruItem.nama_lengkap || ''
   form.email = guruItem.user?.email || ''
   form.role = guruItem.user?.role || ''

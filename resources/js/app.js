@@ -23,6 +23,9 @@ import GuruForm from './pages/admin/guru/Form.vue'
 import KelasIndex from './pages/admin/kelas/Index.vue'
 import JurusanIndex from './pages/admin/jurusan/Index.vue'
 import MataPelajaranIndex from './pages/admin/mata-pelajaran/Index.vue'
+import EkstrakurikulerIndex from './pages/admin/ekstrakurikuler/Index.vue'
+import PklIndex from './pages/admin/pkl/Index.vue'
+import TahunAjaranIndex from './pages/admin/tahun-ajaran/Index.vue'
 import UserIndex from './pages/admin/user/Index.vue'
 import WaliKelasIndex from './pages/admin/wali-kelas/Index.vue'
 
@@ -150,8 +153,23 @@ const routes = [
         component: MataPelajaranIndex
       },
       {
-        path: 'user',
-        name: 'admin.user.index',
+        path: 'ekstrakurikuler',
+        name: 'admin.ekstrakurikuler.index',
+        component: EkstrakurikulerIndex
+      },
+      {
+        path: 'pkl',
+        name: 'admin.pkl.index',
+        component: PklIndex
+      },
+      {
+        path: 'tahun-ajaran',
+        name: 'admin.tahun-ajaran.index',
+        component: TahunAjaranIndex
+      },
+      {
+        path: 'users',
+        name: 'admin.users.index',
         component: UserIndex
       }
     ]

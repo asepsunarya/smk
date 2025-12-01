@@ -24,15 +24,23 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with(['guru', 'siswa.kelas.jurusan', 'kelasAsWali']);
+        $query = User::with(['guru', 'siswa.kelas.jurusan']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%");
+                  ->orWhere('nuptk', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%")
+                  ->orWhereHas('guru', function ($qg) use ($search) {
+                      $qg->where('nuptk', 'like', "%{$search}%")
+                         ->orWhere('nama_lengkap', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('siswa', function ($qs) use ($search) {
+                      $qs->where('nis', 'like', "%{$search}%")
+                         ->orWhere('nama_lengkap', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -62,15 +70,15 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', 'in:admin,guru,wali_kelas,kepala_sekolah,siswa'],
-            'nip' => ['nullable', 'string', 'unique:users'],
+            'nuptk' => ['nullable', 'string', 'unique:users'],
             'nis' => ['nullable', 'string', 'unique:users'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
         // Validate role-specific fields
-        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah']) && !$request->nip) {
+        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah']) && !$request->nuptk) {
             return response()->json([
-                'message' => 'NIP wajib diisi untuk role guru, wali kelas, atau kepala sekolah',
+                'message' => 'NUPTK wajib diisi untuk role guru, wali kelas, atau kepala sekolah',
             ], 422);
         }
 
@@ -87,7 +95,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
-                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
                 'nis' => $request->nis,
                 'is_active' => $request->is_active ?? true,
             ]);
@@ -141,15 +149,15 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', Rule::unique('users')->ignore($user->id)],
             'role' => ['required', 'in:admin,guru,wali_kelas,kepala_sekolah,siswa'],
-            'nip' => ['nullable', 'string', Rule::unique('users')->ignore($user->id)],
+            'nuptk' => ['nullable', 'string', Rule::unique('users')->ignore($user->id)],
             'nis' => ['nullable', 'string', Rule::unique('users')->ignore($user->id)],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
         // Validate role-specific fields
-        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah']) && !$request->nip) {
+        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah']) && !$request->nuptk) {
             return response()->json([
-                'message' => 'NIP wajib diisi untuk role guru, wali kelas, atau kepala sekolah',
+                'message' => 'NUPTK wajib diisi untuk role guru, wali kelas, atau kepala sekolah',
             ], 422);
         }
 
@@ -165,7 +173,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'role' => $request->role,
-                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
                 'nis' => $request->nis,
                 'is_active' => $request->is_active ?? $user->is_active,
             ]);
@@ -281,4 +289,5 @@ class UserController extends Controller
         ]);
     }
 }
+
 

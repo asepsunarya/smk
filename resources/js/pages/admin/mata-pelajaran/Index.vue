@@ -65,8 +65,8 @@
           <div class="text-sm text-gray-900">
             {{ item.guru?.nama_lengkap || item.guru?.user?.name || '-' }}
           </div>
-          <div v-if="item.guru?.nip" class="text-xs text-gray-500">
-            {{ item.guru.nip }}
+          <div v-if="item.guru?.nuptk" class="text-xs text-gray-500">
+            {{ item.guru.nuptk }}
           </div>
         </template>
 
@@ -174,7 +174,7 @@
               type="select"
               label="Guru"
               placeholder="Pilih guru"
-              :options="guruOptions.map(g => ({ value: g.id, label: `${g.nama_lengkap || g.user?.name}${g.nip ? ' - ' + g.nip : ''}` }))"
+              :options="guruOptions.map(g => ({ value: g.id, label: `${g.nama_lengkap || g.user?.name}${g.nuptk ? ' - ' + g.nuptk : ''}` }))"
               required
               :error="errors.guru_id"
             />
@@ -334,7 +334,7 @@ const fetchGuru = async () => {
         { id: '', name: 'Semua Guru' },
         ...response.data.data.map(g => ({
           id: g.id,
-          name: `${g.nama_lengkap}${g.nip ? ' - ' + g.nip : ''}`
+          name: `${g.nama_lengkap}${g.nuptk ? ' - ' + g.nuptk : ''}`
         }))
       ]
     }

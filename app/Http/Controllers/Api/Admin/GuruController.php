@@ -31,7 +31,7 @@ class GuruController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%")
+                  ->orWhere('nuptk', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($qu) use ($search) {
                       $qu->where('email', 'like', "%{$search}%");
                   });
@@ -60,7 +60,7 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nip' => ['required', 'string', 'unique:guru'],
+            'nuptk' => ['required', 'string', 'unique:guru'],
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
@@ -83,12 +83,12 @@ class GuruController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
-                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
             ]);
 
             $guru = Guru::create([
                 'user_id' => $user->id,
-                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
                 'nama_lengkap' => $request->nama_lengkap,
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,
@@ -149,7 +149,7 @@ class GuruController extends Controller
     public function update(Request $request, Guru $guru)
     {
         $request->validate([
-            'nip' => ['required', 'string', Rule::unique('guru')->ignore($guru->id)],
+            'nuptk' => ['required', 'string', Rule::unique('guru')->ignore($guru->id)],
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', Rule::unique('users')->ignore($guru->user_id)],
             'role' => ['required', 'in:guru,wali_kelas,kepala_sekolah'],
@@ -170,7 +170,7 @@ class GuruController extends Controller
                 'name' => $request->nama_lengkap,
                 'email' => $request->email,
                 'role' => $request->role,
-                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
             ]);
 
             $guru->update($request->except(['email', 'password', 'role']));

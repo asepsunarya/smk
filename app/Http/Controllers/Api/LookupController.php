@@ -62,7 +62,7 @@ class LookupController extends Controller
         $guru = Guru::with('user')->where('status', 'aktif')->get()->map(function ($guru) {
             return [
                 'id' => $guru->id,
-                'nip' => $guru->nip,
+                'nuptk' => $guru->nuptk,
                 'nama_lengkap' => $guru->nama_lengkap,
                 'bidang_studi' => $guru->bidang_studi,
             ];

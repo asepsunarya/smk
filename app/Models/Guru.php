@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Guru Model
- * 
+ *
  * Represents teacher data
  */
 class Guru extends Model
@@ -18,7 +18,7 @@ class Guru extends Model
 
     protected $fillable = [
         'user_id',
-        'nip',
+        'nuptk',
         'nama_lengkap',
         'jenis_kelamin',
         'tempat_lahir',

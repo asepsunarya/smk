@@ -16,7 +16,7 @@ class GuruSeeder extends Seeder
         $guruData = [
             [
                 'email' => 'siti.aminah@smk.sch.id',
-                'nip' => '197203121998032001',
+                'nuptk' => '197203121998032001',
                 'nama_lengkap' => 'Dra. Siti Aminah, M.Pd',
                 'jenis_kelamin' => 'P',
                 'tempat_lahir' => 'Bandung',
@@ -30,7 +30,7 @@ class GuruSeeder extends Seeder
             ],
             [
                 'email' => 'ahmad.fauzi@smk.sch.id',
-                'nip' => '198506151010011002',
+                'nuptk' => '198506151010011002',
                 'nama_lengkap' => 'Ahmad Fauzi, S.Kom',
                 'jenis_kelamin' => 'L',
                 'tempat_lahir' => 'Jakarta',
@@ -44,7 +44,7 @@ class GuruSeeder extends Seeder
             ],
             [
                 'email' => 'sri.wahyuni@smk.sch.id',
-                'nip' => '198012201005012003',
+                'nuptk' => '198012201005012003',
                 'nama_lengkap' => 'Sri Wahyuni, S.Pd',
                 'jenis_kelamin' => 'P',
                 'tempat_lahir' => 'Surabaya',
@@ -58,7 +58,7 @@ class GuruSeeder extends Seeder
             ],
             [
                 'email' => 'budi.santoso@smk.sch.id',
-                'nip' => '197908111006041004',
+                'nuptk' => '197908111006041004',
                 'nama_lengkap' => 'Budi Santoso, S.T',
                 'jenis_kelamin' => 'L',
                 'tempat_lahir' => 'Yogyakarta',
@@ -72,7 +72,7 @@ class GuruSeeder extends Seeder
             ],
             [
                 'email' => 'rina.marlina@smk.sch.id',
-                'nip' => '198204152006042005',
+                'nuptk' => '198204152006042005',
                 'nama_lengkap' => 'Rina Marlina, S.Pd',
                 'jenis_kelamin' => 'P',
                 'tempat_lahir' => 'Medan',
@@ -91,7 +91,7 @@ class GuruSeeder extends Seeder
             if ($user) {
                 Guru::create([
                     'user_id' => $user->id,
-                    'nip' => $data['nip'],
+                    'nuptk' => $data['nuptk'],
                     'nama_lengkap' => $data['nama_lengkap'],
                     'jenis_kelamin' => $data['jenis_kelamin'],
                     'tempat_lahir' => $data['tempat_lahir'],
@@ -112,7 +112,7 @@ class GuruSeeder extends Seeder
         if ($demoUser) {
             Guru::create([
                 'user_id' => $demoUser->id,
-                'nip' => 'DEMO001',
+                'nuptk' => 'DEMO001',
                 'nama_lengkap' => 'Demo Guru',
                 'jenis_kelamin' => 'L',
                 'tempat_lahir' => 'Jakarta',

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Ekstrakurikuler Model
- * 
+ *
  * Represents extracurricular activities
  */
 class Ekstrakurikuler extends Model
@@ -20,15 +20,10 @@ class Ekstrakurikuler extends Model
         'nama',
         'deskripsi',
         'pembina_id',
-        'hari',
-        'jam_mulai',
-        'jam_selesai',
         'is_active',
     ];
 
     protected $casts = [
-        'jam_mulai' => 'datetime:H:i',
-        'jam_selesai' => 'datetime:H:i',
         'is_active' => 'boolean',
     ];
 
@@ -69,25 +64,6 @@ class Ekstrakurikuler extends Model
         return $query->where('is_active', true);
     }
 
-    /**
-     * Get the time range.
-     *
-     * @return string
-     */
-    public function getTimeRangeAttribute()
-    {
-        return $this->jam_mulai->format('H:i') . ' - ' . $this->jam_selesai->format('H:i');
-    }
-
-    /**
-     * Get the schedule description.
-     *
-     * @return string
-     */
-    public function getScheduleAttribute()
-    {
-        return $this->hari . ', ' . $this->time_range;
-    }
 
     /**
      * Get count of active members for specific tahun ajaran.

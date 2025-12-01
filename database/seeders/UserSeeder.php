@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
             'email' => 'kepsek@smk.sch.id',
             'password' => Hash::make('password'),
             'role' => 'kepala_sekolah',
-            'nip' => '196505151990031005',
+            'nuptk' => '196505151990031005',
             'is_active' => true,
         ]);
 
@@ -37,31 +37,31 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Dra. Siti Aminah, M.Pd',
                 'email' => 'siti.aminah@smk.sch.id',
-                'nip' => '197203121998032001',
+                'nuptk' => '197203121998032001',
                 'role' => 'guru',
             ],
             [
                 'name' => 'Ahmad Fauzi, S.Kom',
                 'email' => 'ahmad.fauzi@smk.sch.id',
-                'nip' => '198506151010011002',
+                'nuptk' => '198506151010011002',
                 'role' => 'guru',
             ],
             [
                 'name' => 'Sri Wahyuni, S.Pd',
                 'email' => 'sri.wahyuni@smk.sch.id',
-                'nip' => '198012201005012003',
+                'nuptk' => '198012201005012003',
                 'role' => 'wali_kelas',
             ],
             [
                 'name' => 'Budi Santoso, S.T',
                 'email' => 'budi.santoso@smk.sch.id',
-                'nip' => '197908111006041004',
+                'nuptk' => '197908111006041004',
                 'role' => 'wali_kelas',
             ],
             [
                 'name' => 'Rina Marlina, S.Pd',
                 'email' => 'rina.marlina@smk.sch.id',
-                'nip' => '198204152006042005',
+                'nuptk' => '198204152006042005',
                 'role' => 'guru',
             ],
         ];
@@ -72,7 +72,7 @@ class UserSeeder extends Seeder
                 'email' => $guru['email'],
                 'password' => Hash::make('password'),
                 'role' => $guru['role'],
-                'nip' => $guru['nip'],
+                'nuptk' => $guru['nuptk'],
                 'is_active' => true,
             ]);
         }
@@ -136,7 +136,7 @@ class UserSeeder extends Seeder
             'email' => 'guru@demo.com',
             'password' => Hash::make('password'),
             'role' => 'guru',
-            'nip' => 'DEMO001',
+            'nuptk' => 'DEMO001',
             'is_active' => true,
         ]);
 
