@@ -23,7 +23,7 @@ class PklController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pkl::with(['tahunAjaran']);
+        $query = Pkl::with(['tahunAjaran', 'pembimbingSekolah']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -31,7 +31,9 @@ class PklController extends Controller
                 $q->where('nama_perusahaan', 'like', "%{$search}%")
                   ->orWhere('alamat_perusahaan', 'like', "%{$search}%")
                   ->orWhere('pembimbing_perusahaan', 'like', "%{$search}%")
-                  ->orWhere('pembimbing_sekolah', 'like', "%{$search}%");
+                  ->orWhereHas('pembimbingSekolah', function ($qg) use ($search) {
+                      $qg->where('nama_lengkap', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -74,7 +76,7 @@ class PklController extends Controller
             'nama_perusahaan' => ['required', 'string', 'max:255'],
             'alamat_perusahaan' => ['required', 'string'],
             'pembimbing_perusahaan' => ['required', 'string', 'max:255'],
-            'pembimbing_sekolah' => ['required', 'string', 'max:255'],
+            'pembimbing_sekolah_id' => ['required', 'integer', 'exists:guru,id'],
             'tanggal_mulai' => ['required', 'date'],
             'tanggal_selesai' => ['required', 'date', 'after:tanggal_mulai'],
             'tahun_ajaran_id' => ['required', 'integer', 'exists:tahun_ajaran,id'],
@@ -88,7 +90,7 @@ class PklController extends Controller
 
             // Reload with relationships
             $pkl->refresh();
-            $pkl->load(['tahunAjaran']);
+            $pkl->load(['tahunAjaran', 'pembimbingSekolah']);
 
             return response()->json([
                 'message' => 'PKL berhasil ditambahkan',
@@ -118,7 +120,7 @@ class PklController extends Controller
      */
     public function show(Pkl $pkl)
     {
-        $pkl->load(['tahunAjaran']);
+        $pkl->load(['tahunAjaran', 'pembimbingSekolah']);
 
         return response()->json($pkl);
     }
@@ -136,7 +138,7 @@ class PklController extends Controller
             'nama_perusahaan' => ['sometimes', 'string', 'max:255'],
             'alamat_perusahaan' => ['sometimes', 'string'],
             'pembimbing_perusahaan' => ['sometimes', 'string', 'max:255'],
-            'pembimbing_sekolah' => ['sometimes', 'string', 'max:255'],
+            'pembimbing_sekolah_id' => ['sometimes', 'integer', 'exists:guru,id'],
             'tanggal_mulai' => ['sometimes', 'date'],
             'tanggal_selesai' => ['sometimes', 'date', 'after:tanggal_mulai'],
             'tahun_ajaran_id' => ['sometimes', 'integer', 'exists:tahun_ajaran,id'],
@@ -150,7 +152,7 @@ class PklController extends Controller
 
             // Reload with relationships
             $pkl->refresh();
-            $pkl->load(['tahunAjaran']);
+            $pkl->load(['tahunAjaran', 'pembimbingSekolah']);
 
             return response()->json([
                 'message' => 'PKL berhasil diperbarui',

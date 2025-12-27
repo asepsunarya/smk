@@ -31,13 +31,13 @@
             option-label="name"
             @update:model-value="fetchEkstrakurikuler"
           />
-          <FormField
+          <!-- <FormField
             v-model="filters.is_active"
             type="select"
             placeholder="Status"
             :options="statusOptions"
             @update:model-value="fetchEkstrakurikuler"
-          />
+          /> -->
         </template>
 
         <template #cell-nama="{ item }">
@@ -67,14 +67,14 @@
 
         <template #row-actions="{ item }">
           <div class="flex items-center space-x-2">
-            <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.is_active ? 'Nonaktifkan' : 'Aktifkan'">
+            <!-- <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.is_active ? 'Nonaktifkan' : 'Aktifkan'">
               <svg v-if="item.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
               </svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-            </button>
+            </button> -->
             <button @click="editEkstrakurikuler(item)" class="text-blue-600 hover:text-blue-900" title="Edit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -119,7 +119,7 @@
                 :rows="3"
               />
             </div>
-            <div v-if="isEditing" class="sm:col-span-2">
+            <!-- <div v-if="isEditing" class="sm:col-span-2">
               <div class="flex items-center">
                 <input
                   id="is_active"
@@ -131,7 +131,7 @@
                   Aktif
                 </label>
               </div>
-            </div>
+            </div> -->
           </div>
         </form>
 
@@ -217,7 +217,7 @@ const filters = reactive({
 const columns = [
   { key: 'nama', label: 'Nama Ekstrakurikuler', sortable: true },
   { key: 'pembina', label: 'Pembina' },
-  { key: 'status', label: 'Status' }
+  // { key: 'status', label: 'Status' }
 ]
 
 // Options

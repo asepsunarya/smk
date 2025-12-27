@@ -20,7 +20,7 @@ class Pkl extends Model
         'nama_perusahaan',
         'alamat_perusahaan',
         'pembimbing_perusahaan',
-        'pembimbing_sekolah',
+        'pembimbing_sekolah_id',
         'tanggal_mulai',
         'tanggal_selesai',
         'tahun_ajaran_id',
@@ -38,6 +38,14 @@ class Pkl extends Model
     public function tahunAjaran()
     {
         return $this->belongsTo(TahunAjaran::class);
+    }
+
+    /**
+     * Get the pembimbing sekolah (guru).
+     */
+    public function pembimbingSekolah()
+    {
+        return $this->belongsTo(Guru::class, 'pembimbing_sekolah_id');
     }
 
     /**

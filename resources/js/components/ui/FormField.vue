@@ -45,12 +45,13 @@
         :value="modelValue"
         :disabled="disabled"
         :required="required"
+        :multiple="multiple"
         :class="inputClasses"
-        @change="$emit('update:modelValue', $event.target.value)"
+        @change="handleSelectChange"
         @blur="$emit('blur')"
         @focus="$emit('focus')"
       >
-        <option v-if="placeholder" value="">{{ placeholder }}</option>
+        <option v-if="placeholder && !multiple" value="">{{ placeholder }}</option>
         <option
           v-for="option in options"
           :key="getOptionValue(option)"
@@ -201,6 +202,10 @@ const inputClasses = computed(() => {
     'focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
   ]
   
+  if (props.type === 'select' && props.multiple) {
+    baseClasses.push('min-h-[100px]')
+  }
+  
   if (props.error) {
     baseClasses.push('border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500')
   }
@@ -238,5 +243,15 @@ const handleFileChange = (event) => {
     emit('update:modelValue', files[0] || null)
   }
   emit('file-change', files)
+}
+
+const handleSelectChange = (event) => {
+  if (props.multiple) {
+    const selectedOptions = Array.from(event.target.selectedOptions)
+    const values = selectedOptions.map(option => option.value)
+    emit('update:modelValue', values)
+  } else {
+    emit('update:modelValue', event.target.value)
+  }
 }
 </script>

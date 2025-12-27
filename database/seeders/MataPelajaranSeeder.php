@@ -78,32 +78,40 @@ class MataPelajaranSeeder extends Seeder
                 $kelasToAssign = $kelas;
             }
 
-            // Create mata pelajaran for each kelas
-            foreach ($kelasToAssign as $kelasItem) {
-                // Generate unique kode_mapel: kodeBase-tingkat-kelas_id
-                $kodeMapel = "{$kodeBase}-{$kelasItem->tingkat}-{$kelasItem->id}";
+            // Skip if no kelas to assign
+            if ($kelasToAssign->isEmpty()) {
+                continue;
+            }
 
+            // Check if mata pelajaran with this kode already exists
+            $existingMapel = MataPelajaran::where('kode_mapel', $kodeBase)->first();
+
+            if ($existingMapel) {
+                // If exists, just sync the kelas
+                $kelasIds = $kelasToAssign->pluck('id')->toArray();
+                $existingMapel->kelas()->syncWithoutDetaching($kelasIds);
+                $this->command->info("Synced kelas to existing: {$kodeBase} - {$config['nama_mapel']}");
+            } else {
                 // Get guru (round robin)
                 $guru = $gurus->get($guruIndex % $gurus->count());
                 $guruIndex++;
 
-                // Check if already exists
-                $existing = MataPelajaran::where('kode_mapel', $kodeMapel)->first();
-                if ($existing) {
-                    continue;
-                }
-
-                MataPelajaran::create([
-                    'kode_mapel' => $kodeMapel,
+                // Create one mata pelajaran with the base kode
+                $mataPelajaran = MataPelajaran::create([
+                    'kode_mapel' => $kodeBase,
                     'nama_mapel' => $config['nama_mapel'],
                     'kkm' => $config['kkm'],
                     'guru_id' => $guru->id,
-                    'kelas_id' => $kelasItem->id,
                     'is_active' => true,
                 ]);
 
+                // Attach all kelas to this mata pelajaran
+                $kelasIds = $kelasToAssign->pluck('id')->toArray();
+                $mataPelajaran->kelas()->attach($kelasIds);
+
+                $kelasNames = $kelasToAssign->pluck('nama_kelas')->join(', ');
+                $this->command->info("Created: {$kodeBase} - {$config['nama_mapel']} -> {$kelasNames} ({$guru->nama_lengkap})");
                 $totalCreated++;
-                $this->command->info("Created: {$kodeMapel} - {$config['nama_mapel']} -> {$kelasItem->nama_kelas} ({$guru->nama_lengkap})");
             }
         }
 

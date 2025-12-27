@@ -56,7 +56,8 @@ class Kelas extends Model
      */
     public function mataPelajaran()
     {
-        return $this->hasMany(MataPelajaran::class);
+        return $this->belongsToMany(MataPelajaran::class, 'kelas_mata_pelajaran', 'kelas_id', 'mata_pelajaran_id')
+                    ->withTimestamps();
     }
 
     /**

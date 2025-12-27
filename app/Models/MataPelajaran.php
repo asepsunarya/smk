@@ -21,7 +21,6 @@ class MataPelajaran extends Model
         'nama_mapel',
         'kkm',
         'guru_id',
-        'kelas_id',
         'is_active',
     ];
 
@@ -60,7 +59,8 @@ class MataPelajaran extends Model
      */
     public function kelas()
     {
-        return $this->belongsTo(Kelas::class);
+        return $this->belongsToMany(Kelas::class, 'kelas_mata_pelajaran', 'mata_pelajaran_id', 'kelas_id')
+                    ->withTimestamps();
     }
 
     /**

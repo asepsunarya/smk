@@ -71,11 +71,18 @@
         </template>
 
         <template #cell-kelas="{ item }">
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-            {{ item.kelas?.nama_kelas || '-' }}
-          </span>
-          <div v-if="item.kelas?.jurusan" class="text-xs text-gray-500 mt-1">
-            {{ item.kelas.jurusan.nama_jurusan }}
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="kelas in (item.kelas || [])"
+              :key="kelas.id"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+            >
+              {{ kelas.nama_kelas }}
+              <span v-if="kelas.jurusan" class="ml-1 text-blue-600">
+                ({{ kelas.jurusan.nama_jurusan }})
+              </span>
+            </span>
+            <span v-if="!item.kelas || item.kelas.length === 0" class="text-gray-400">-</span>
           </div>
         </template>
 
@@ -95,10 +102,10 @@
         <template #cell-statistik="{ item }">
           <div class="text-sm">
             <div class="flex items-center space-x-4">
-              <div>
+              <!-- <div>
                 <span class="text-gray-500">Nilai:</span>
                 <span class="ml-1 font-medium text-gray-900">{{ item.nilai_count || 0 }}</span>
-              </div>
+              </div> -->
               <div>
                 <span class="text-gray-500">CP:</span>
                 <span class="ml-1 font-medium text-gray-900">{{ item.capaian_pembelajaran_count || 0 }}</span>
@@ -109,14 +116,14 @@
 
         <template #row-actions="{ item }">
           <div class="flex items-center space-x-2">
-            <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.is_active ? 'Nonaktifkan' : 'Aktifkan'">
+            <!-- <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.is_active ? 'Nonaktifkan' : 'Aktifkan'">
               <svg v-if="item.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
               </svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-            </button>
+            </button> -->
             <button @click="editMataPelajaran(item)" class="text-blue-600 hover:text-blue-900" title="Edit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -134,6 +141,19 @@
       <!-- Form Modal -->
       <Modal v-model:show="showForm" :title="isEditing ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran'" size="lg">
         <form @submit.prevent="submitForm" id="mata-pelajaran-form" class="space-y-4">
+          <!-- Kelas di paling atas -->
+          <MultiSelect
+            v-model="form.kelas_ids"
+            label="Kelas"
+            placeholder="Pilih kelas (bisa pilih banyak)"
+            :options="kelasOptions.map(k => ({ value: k.id, label: `${k.nama_kelas} - ${k.jurusan?.nama_jurusan}` }))"
+            :searchable="true"
+            :max-height="500"
+            required
+            :error="errors.kelas_ids"
+            help-text="Pilih satu atau lebih kelas untuk mata pelajaran ini"
+          />
+          
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               v-model="form.kode_mapel"
@@ -161,15 +181,6 @@
               :max="100"
             />
             <FormField
-              v-if="isEditing"
-              v-model="form.is_active"
-              type="checkbox"
-              label="Aktif"
-              :error="errors.is_active"
-            />
-          </div>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
               v-model="form.guru_id"
               type="select"
               label="Guru"
@@ -179,13 +190,11 @@
               :error="errors.guru_id"
             />
             <FormField
-              v-model="form.kelas_id"
-              type="select"
-              label="Kelas"
-              placeholder="Pilih kelas"
-              :options="kelasOptions.map(k => ({ value: k.id, label: `${k.nama_kelas} - ${k.jurusan?.nama_jurusan}` }))"
-              required
-              :error="errors.kelas_id"
+              v-if="isEditing"
+              v-model="form.is_active"
+              type="checkbox"
+              label="Aktif"
+              :error="errors.is_active"
             />
           </div>
         </form>
@@ -233,6 +242,7 @@ import axios from 'axios'
 import DataTable from '../../../components/ui/DataTable.vue'
 import Modal from '../../../components/ui/Modal.vue'
 import FormField from '../../../components/ui/FormField.vue'
+import MultiSelect from '../../../components/ui/MultiSelect.vue'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog.vue'
 
 const toast = useToast()
@@ -258,7 +268,7 @@ const form = reactive({
   kkm: 75,
   is_active: true,
   guru_id: '',
-  kelas_id: ''
+  kelas_ids: []
 })
 
 const errors = ref({})
@@ -277,7 +287,7 @@ const columns = [
   { key: 'guru', label: 'Guru' },
   { key: 'kelas', label: 'Kelas' },
   { key: 'kkm', label: 'KKM' },
-  { key: 'status', label: 'Status' },
+  // { key: 'status', label: 'Status' },
   { key: 'statistik', label: 'Statistik' }
 ]
 
@@ -371,7 +381,7 @@ const resetForm = () => {
   form.kkm = 75
   form.is_active = true
   form.guru_id = ''
-  form.kelas_id = ''
+  form.kelas_ids = []
   errors.value = {}
 }
 
@@ -383,15 +393,35 @@ const closeForm = () => {
 }
 
 const editMataPelajaran = async (item) => {
-  selectedMataPelajaran.value = item
-  isEditing.value = true
-  form.kode_mapel = item.kode_mapel
-  form.nama_mapel = item.nama_mapel
-  form.kkm = item.kkm
-  form.is_active = item.is_active
-  form.guru_id = item.guru?.id || item.guru_id || ''
-  form.kelas_id = item.kelas?.id || item.kelas_id || ''
-  showForm.value = true
+  try {
+    // Fetch full data from API to ensure we have all kelas relationships
+    const response = await axios.get(`/admin/mata-pelajaran/${item.id}`)
+    const fullData = response.data.data || response.data
+    
+    selectedMataPelajaran.value = fullData
+    isEditing.value = true
+    form.kode_mapel = fullData.kode_mapel
+    form.nama_mapel = fullData.nama_mapel
+    form.kkm = fullData.kkm
+    form.is_active = fullData.is_active
+    form.guru_id = fullData.guru?.id || fullData.guru_id || ''
+    
+    // Handle kelas - bisa array atau single object
+    if (Array.isArray(fullData.kelas)) {
+      form.kelas_ids = fullData.kelas.map(k => k.id)
+    } else if (fullData.kelas?.id) {
+      form.kelas_ids = [fullData.kelas.id]
+    } else if (fullData.kelas_id) {
+      form.kelas_ids = [fullData.kelas_id]
+    } else {
+      form.kelas_ids = []
+    }
+    
+    showForm.value = true
+  } catch (error) {
+    toast.error('Gagal mengambil data mata pelajaran')
+    console.error(error)
+  }
 }
 
 const submitForm = async () => {
@@ -405,20 +435,35 @@ const submitForm = async () => {
       return
     }
 
+    // Validate kelas_ids
+    const kelasIdsArray = Array.isArray(form.kelas_ids) 
+      ? form.kelas_ids.filter(id => id !== '' && id !== null && id !== undefined)
+      : []
+    
+    if (kelasIdsArray.length === 0) {
+      errors.value.kelas_ids = 'Pilih minimal satu kelas'
+      toast.error('Pilih minimal satu kelas')
+      submitting.value = false
+      return
+    }
+
     const url = isEditing.value
       ? `/admin/mata-pelajaran/${selectedMataPelajaran.value.id}`
       : '/admin/mata-pelajaran'
     
     const method = isEditing.value ? 'put' : 'post'
     
-    // Prepare form data
+    // Prepare form data - ensure kelas_ids are integers
     const formData = {
       kode_mapel: form.kode_mapel,
       nama_mapel: form.nama_mapel,
       kkm: Number.parseInt(form.kkm, 10),
       is_active: form.is_active,
       guru_id: Number.parseInt(form.guru_id, 10),
-      kelas_id: Number.parseInt(form.kelas_id, 10)
+      kelas_ids: kelasIdsArray.map(id => {
+        const numId = typeof id === 'string' ? Number.parseInt(id, 10) : id
+        return isNaN(numId) ? null : numId
+      }).filter(id => id !== null)
     }
     
     await axios[method](url, formData)

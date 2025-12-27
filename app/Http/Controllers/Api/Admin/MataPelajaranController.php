@@ -46,7 +46,9 @@ class MataPelajaranController extends Controller
         }
 
         if ($request->has('kelas_id')) {
-            $query->where('kelas_id', $request->kelas_id);
+            $query->whereHas('kelas', function ($q) use ($request) {
+                $q->where('kelas.id', $request->kelas_id);
+            });
         }
 
         if ($request->has('is_active')) {
@@ -71,7 +73,8 @@ class MataPelajaranController extends Controller
             'nama_mapel' => ['required', 'string', 'max:255'],
             'kkm' => ['required', 'integer', 'min:0', 'max:100'],
             'guru_id' => ['required', 'integer', 'exists:guru,id'],
-            'kelas_id' => ['required', 'integer', 'exists:kelas,id'],
+            'kelas_ids' => ['required', 'array', 'min:1'],
+            'kelas_ids.*' => ['integer', 'exists:kelas,id'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -82,9 +85,11 @@ class MataPelajaranController extends Controller
                 'nama_mapel' => $validated['nama_mapel'],
                 'kkm' => (int) $validated['kkm'],
                 'guru_id' => (int) $validated['guru_id'],
-                'kelas_id' => (int) $validated['kelas_id'],
                 'is_active' => $validated['is_active'] ?? true,
             ]);
+
+            // Attach kelas
+            $mataPelajaran->kelas()->attach($validated['kelas_ids']);
 
             DB::commit();
 
@@ -141,7 +146,8 @@ class MataPelajaranController extends Controller
             'nama_mapel' => ['sometimes', 'string', 'max:255'],
             'kkm' => ['sometimes', 'integer', 'min:0', 'max:100'],
             'guru_id' => ['sometimes', 'exists:guru,id'],
-            'kelas_id' => ['sometimes', 'exists:kelas,id'],
+            'kelas_ids' => ['sometimes', 'array', 'min:1'],
+            'kelas_ids.*' => ['integer', 'exists:kelas,id'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -152,9 +158,13 @@ class MataPelajaranController extends Controller
                 'nama_mapel',
                 'kkm',
                 'guru_id',
-                'kelas_id',
                 'is_active',
             ]));
+
+            // Sync kelas if provided
+            if ($request->has('kelas_ids')) {
+                $mataPelajaran->kelas()->sync($request->kelas_ids);
+            }
 
             DB::commit();
 

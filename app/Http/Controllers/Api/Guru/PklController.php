@@ -32,9 +32,9 @@ class PklController extends Controller
             ], 404);
         }
 
-        // Since pembimbing_sekolah is a string, filter by guru name
-        $pkl = Pkl::where('pembimbing_sekolah', 'like', "%{$guru->nama_lengkap}%")
-                  ->with(['tahunAjaran'])
+        // Get PKL where this guru is pembimbing
+        $pkl = Pkl::where('pembimbing_sekolah_id', $guru->id)
+                  ->with(['tahunAjaran', 'pembimbingSekolah'])
                   ->orderBy('created_at', 'desc')
                   ->get();
 
@@ -57,25 +57,23 @@ class PklController extends Controller
         $guru = $user->guru;
 
         // Verify that this PKL is supervised by the current guru
-        if (stripos($pkl->pembimbing_sekolah, $guru->nama_lengkap) === false) {
+        if ($pkl->pembimbing_sekolah_id !== $guru->id) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk mengubah PKL ini',
             ], 403);
         }
 
         $request->validate([
-            'pembimbing_sekolah' => 'sometimes|string|max:255',
             'keterangan' => 'nullable|string|max:500',
         ]);
 
         $pkl->update($request->only([
-            'pembimbing_sekolah',
             'keterangan',
         ]));
 
         return response()->json([
             'message' => 'PKL berhasil diperbarui',
-            'data' => $pkl->load(['tahunAjaran']),
+            'data' => $pkl->load(['tahunAjaran', 'pembimbingSekolah']),
         ]);
     }
 }

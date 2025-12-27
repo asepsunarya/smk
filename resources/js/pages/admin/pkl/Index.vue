@@ -52,7 +52,10 @@
 
         <template #cell-pembimbing_sekolah="{ item }">
           <div class="text-sm text-gray-900">
-            {{ item.pembimbing_sekolah || '-' }}
+            {{ item.pembimbing_sekolah?.nama_lengkap || item.pembimbing_sekolah || '-' }}
+          </div>
+          <div v-if="item.pembimbing_sekolah?.nuptk" class="text-xs text-gray-500">
+            {{ item.pembimbing_sekolah.nuptk }}
           </div>
         </template>
 
@@ -127,11 +130,13 @@
               :error="errors.pembimbing_perusahaan"
             />
             <FormField
-              v-model="form.pembimbing_sekolah"
+              v-model="form.pembimbing_sekolah_id"
+              type="select"
               label="Pembimbing Sekolah"
-              placeholder="Masukkan nama pembimbing sekolah"
+              placeholder="Pilih pembimbing sekolah"
+              :options="guruOptions.map(g => ({ value: g.id, label: `${g.nama_lengkap || g.user?.name}${g.nuptk ? ' - ' + g.nuptk : ''}` }))"
               required
-              :error="errors.pembimbing_sekolah"
+              :error="errors.pembimbing_sekolah_id"
             />
             <FormField
               v-model="form.tanggal_mulai"
@@ -204,7 +209,7 @@ const form = reactive({
   nama_perusahaan: '',
   alamat_perusahaan: '',
   pembimbing_perusahaan: '',
-  pembimbing_sekolah: '',
+  pembimbing_sekolah_id: '',
   tanggal_mulai: '',
   tanggal_selesai: '',
   tahun_ajaran_id: ''
@@ -237,6 +242,7 @@ const statusOptions = [
 
 const tahunAjaranOptions = ref([])
 const tahunAjaranFilterOptions = ref([{ id: '', label: 'Semua Tahun Ajaran' }])
+const guruOptions = ref([])
 
 // Methods
 const fetchPkl = async () => {
@@ -294,7 +300,7 @@ const resetForm = () => {
   form.nama_perusahaan = ''
   form.alamat_perusahaan = ''
   form.pembimbing_perusahaan = ''
-  form.pembimbing_sekolah = ''
+  form.pembimbing_sekolah_id = ''
   form.tanggal_mulai = ''
   form.tanggal_selesai = ''
   form.tahun_ajaran_id = ''
@@ -314,7 +320,7 @@ const editPkl = async (item) => {
   form.nama_perusahaan = item.nama_perusahaan
   form.alamat_perusahaan = item.alamat_perusahaan
   form.pembimbing_perusahaan = item.pembimbing_perusahaan
-  form.pembimbing_sekolah = item.pembimbing_sekolah || ''
+  form.pembimbing_sekolah_id = item.pembimbing_sekolah_id || item.pembimbing_sekolah?.id || ''
   form.tanggal_mulai = item.tanggal_mulai ? formatDateForInput(item.tanggal_mulai) : ''
   form.tanggal_selesai = item.tanggal_selesai ? formatDateForInput(item.tanggal_selesai) : ''
   form.tahun_ajaran_id = item.tahun_ajaran_id
@@ -343,7 +349,7 @@ const submitForm = async () => {
       nama_perusahaan: form.nama_perusahaan,
       alamat_perusahaan: form.alamat_perusahaan,
       pembimbing_perusahaan: form.pembimbing_perusahaan,
-      pembimbing_sekolah: form.pembimbing_sekolah,
+      pembimbing_sekolah_id: Number.parseInt(form.pembimbing_sekolah_id, 10),
       tanggal_mulai: form.tanggal_mulai,
       tanggal_selesai: form.tanggal_selesai,
       tahun_ajaran_id: Number.parseInt(form.tahun_ajaran_id, 10)
@@ -429,10 +435,27 @@ const getStatusBadge = (status) => {
   return badgeMap[status] || 'bg-gray-100 text-gray-800'
 }
 
+const fetchGuru = async () => {
+  try {
+    const response = await axios.get('/admin/guru', {
+      params: {
+        status: 'aktif',
+        per_page: 100
+      }
+    })
+    if (response.data.data) {
+      guruOptions.value = response.data.data
+    }
+  } catch (error) {
+    console.error('Failed to fetch guru:', error)
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   fetchPkl()
   fetchTahunAjaran()
+  fetchGuru()
 })
 </script>
 
