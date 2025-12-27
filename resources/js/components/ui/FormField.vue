@@ -32,6 +32,7 @@
         :readonly="readonly"
         :required="required"
         :rows="rows"
+        :maxlength="maxlength"
         :class="inputClasses"
         @input="$emit('update:modelValue', $event.target.value)"
         @blur="$emit('blur')"
@@ -165,6 +166,10 @@ const props = defineProps({
   rows: {
     type: Number,
     default: 3
+  },
+  maxlength: {
+    type: Number,
+    default: null
   },
   options: {
     type: Array,

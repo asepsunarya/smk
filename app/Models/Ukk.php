@@ -19,7 +19,8 @@ class Ukk extends Model
     protected $fillable = [
         'siswa_id',
         'jurusan_id',
-        'nama_ukk',
+        'kelas_id',
+        'nama_du_di',
         'tanggal_ujian',
         'nilai_teori',
         'nilai_praktek',
@@ -54,6 +55,14 @@ class Ukk extends Model
     }
 
     /**
+     * Get the kelas.
+     */
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
+    /**
      * Get the penguji internal.
      */
     public function pengujiInternal()
@@ -70,7 +79,7 @@ class Ukk extends Model
     }
 
     /**
-     * Calculate nilai akhir (40% teori + 60% praktek).
+     * Calculate nilai akhir (30% teori + 70% praktek).
      *
      * @return float
      */
@@ -80,7 +89,7 @@ class Ukk extends Model
             return 0;
         }
 
-        return round(($this->nilai_teori * 0.4) + ($this->nilai_praktek * 0.6), 2);
+        return round(($this->nilai_teori * 0.3) + ($this->nilai_praktek * 0.7), 2);
     }
 
     /**

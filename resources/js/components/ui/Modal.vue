@@ -38,11 +38,11 @@
             <div
               v-if="show"
               class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full"
-              :class="sizeClasses"
+              :class="[sizeClasses, props.size === 'full' ? 'flex flex-col' : '']"
             >
               <!-- Header -->
-              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
+              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0" :class="props.size === 'full' ? 'border-b' : ''">
+                <div class="sm:flex sm:items-start" :class="props.size === 'full' ? 'flex flex-col' : ''">
                   <!-- Icon -->
                   <div v-if="icon" class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10"
                        :class="iconClasses">
@@ -65,11 +65,11 @@
                   </div>
                   
                   <!-- Content -->
-                  <div class="mt-3 text-center sm:mt-0 sm:text-left" :class="{ 'sm:ml-4': icon }">
-                    <h3 v-if="title" class="text-lg font-medium leading-6 text-gray-900">
+                  <div class="mt-3 text-center sm:mt-0 sm:text-left flex-1 flex flex-col min-w-0" :class="{ 'sm:ml-4': icon }">
+                    <h3 v-if="title" class="text-lg font-medium leading-6 text-gray-900 flex-shrink-0">
                       {{ title }}
                     </h3>
-                    <div class="mt-2">
+                    <div class="mt-2 flex-1 min-h-0" :class="props.size === 'full' ? 'overflow-y-auto' : ''">
                       <slot></slot>
                     </div>
                   </div>
@@ -91,7 +91,7 @@
               </div>
 
               <!-- Footer -->
-              <div v-if="$slots.footer" class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <div v-if="$slots.footer" class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 border-t">
                 <slot name="footer"></slot>
               </div>
             </div>
@@ -117,7 +117,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg', 'xl', '2xl'].includes(value)
+    validator: (value) => ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full'].includes(value)
   },
   icon: {
     type: String,
@@ -142,7 +142,13 @@ const sizeClasses = computed(() => {
     md: 'sm:max-w-md',
     lg: 'sm:max-w-lg',
     xl: 'sm:max-w-xl',
-    '2xl': 'sm:max-w-2xl'
+    '2xl': 'sm:max-w-2xl',
+    '3xl': 'sm:max-w-3xl',
+    '4xl': 'sm:max-w-4xl',
+    '5xl': 'sm:max-w-5xl',
+    '6xl': 'sm:max-w-6xl',
+    '7xl': 'sm:max-w-7xl',
+    'full': 'sm:max-w-[98vw] sm:w-[98vw] sm:h-[95vh]'
   }
   return sizes[props.size]
 })

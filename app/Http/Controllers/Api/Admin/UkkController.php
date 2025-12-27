@@ -23,21 +23,27 @@ class UkkController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Ukk::with(['siswa.user', 'jurusan', 'pengujiInternal.user', 'tahunAjaran']);
+        $query = Ukk::with(['siswa.user', 'jurusan', 'kelas', 'pengujiInternal.user', 'tahunAjaran']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama_ukk', 'like', "%{$search}%")
-                  ->orWhereHas('siswa', function ($q) use ($search) {
+                $q->whereHas('siswa', function ($q) use ($search) {
                       $q->where('nama_lengkap', 'like', "%{$search}%")
                         ->orWhere('nis', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('kelas', function ($q) use ($search) {
+                      $q->where('nama_kelas', 'like', "%{$search}%");
                   });
             });
         }
 
         if ($request->has('jurusan_id')) {
             $query->where('jurusan_id', $request->jurusan_id);
+        }
+
+        if ($request->has('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
         }
 
         if ($request->has('tahun_ajaran_id')) {
@@ -64,7 +70,8 @@ class UkkController extends Controller
         $request->validate([
             'siswa_id' => 'required|exists:siswa,id',
             'jurusan_id' => 'required|exists:jurusan,id',
-            'nama_ukk' => 'required|string|max:255',
+            'kelas_id' => 'required|exists:kelas,id',
+            'nama_du_di' => 'nullable|string|max:255',
             'tanggal_ujian' => 'required|date',
             'nilai_teori' => 'nullable|integer|min:0|max:100',
             'nilai_praktek' => 'nullable|integer|min:0|max:100',
@@ -73,18 +80,24 @@ class UkkController extends Controller
             'tahun_ajaran_id' => 'required|exists:tahun_ajaran,id',
         ]);
 
-        // Verify siswa belongs to the jurusan
+        // Verify siswa belongs to the jurusan and kelas
         $siswa = \App\Models\Siswa::findOrFail($request->siswa_id);
         if ($siswa->kelas->jurusan_id != $request->jurusan_id) {
             return response()->json([
                 'message' => 'Siswa tidak berada di jurusan yang dipilih',
             ], 422);
         }
+        
+        if ($siswa->kelas_id != $request->kelas_id) {
+            return response()->json([
+                'message' => 'Siswa tidak berada di kelas yang dipilih',
+            ], 422);
+        }
 
         $ukk = Ukk::create($request->all());
 
         // Reload with relationships
-        $ukk->load(['siswa.user', 'jurusan', 'pengujiInternal.user', 'tahunAjaran']);
+        $ukk->load(['siswa.user', 'jurusan', 'kelas', 'pengujiInternal.user', 'tahunAjaran']);
 
         return response()->json($ukk, 201);
     }
@@ -114,7 +127,8 @@ class UkkController extends Controller
         $request->validate([
             'siswa_id' => 'sometimes|required|exists:siswa,id',
             'jurusan_id' => 'sometimes|required|exists:jurusan,id',
-            'nama_ukk' => 'sometimes|required|string|max:255',
+            'kelas_id' => 'sometimes|required|exists:kelas,id',
+            'nama_du_di' => 'nullable|string|max:255',
             'tanggal_ujian' => 'sometimes|required|date',
             'nilai_teori' => 'nullable|integer|min:0|max:100',
             'nilai_praktek' => 'nullable|integer|min:0|max:100',
@@ -123,10 +137,11 @@ class UkkController extends Controller
             'tahun_ajaran_id' => 'sometimes|required|exists:tahun_ajaran,id',
         ]);
 
-        // If siswa_id or jurusan_id is being updated, verify siswa belongs to jurusan
-        if ($request->has('siswa_id') || $request->has('jurusan_id')) {
+        // If siswa_id, jurusan_id, or kelas_id is being updated, verify siswa belongs to jurusan and kelas
+        if ($request->has('siswa_id') || $request->has('jurusan_id') || $request->has('kelas_id')) {
             $siswaId = $request->siswa_id ?? $ukk->siswa_id;
             $jurusanId = $request->jurusan_id ?? $ukk->jurusan_id;
+            $kelasId = $request->kelas_id ?? $ukk->kelas_id;
             
             $siswa = \App\Models\Siswa::findOrFail($siswaId);
             if ($siswa->kelas->jurusan_id != $jurusanId) {
@@ -134,12 +149,18 @@ class UkkController extends Controller
                     'message' => 'Siswa tidak berada di jurusan yang dipilih',
                 ], 422);
             }
+            
+            if ($siswa->kelas_id != $kelasId) {
+                return response()->json([
+                    'message' => 'Siswa tidak berada di kelas yang dipilih',
+                ], 422);
+            }
         }
 
         $ukk->update($request->all());
 
         // Reload with relationships
-        $ukk->load(['siswa.user', 'jurusan', 'pengujiInternal.user', 'tahunAjaran']);
+        $ukk->load(['siswa.user', 'jurusan', 'kelas', 'pengujiInternal.user', 'tahunAjaran']);
 
         return response()->json($ukk);
     }

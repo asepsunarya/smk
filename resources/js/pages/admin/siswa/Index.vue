@@ -70,11 +70,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
               </svg>
             </button>
-            <button @click="moveClass(item)" class="text-green-600 hover:text-green-900">
+            <!-- <button @click="moveClass(item)" class="text-green-600 hover:text-green-900">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
               </svg>
-            </button>
+            </button> -->
             <button @click="deleteSiswa(item)" class="text-red-600 hover:text-red-900">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -366,10 +366,28 @@ const fetchSiswa = async () => {
 
 const fetchKelas = async () => {
   try {
-    const response = await axios.get('/admin/kelas')
-    kelasOptions.value = response.data.data
+    const response = await axios.get('/admin/kelas', {
+      params: {
+        per_page: 1000  // Get all kelas including tingkat 12
+      }
+    })
+    // Handle both paginated and non-paginated responses
+    if (response.data.data) {
+      kelasOptions.value = response.data.data
+    } else if (Array.isArray(response.data)) {
+      kelasOptions.value = response.data
+    } else {
+      kelasOptions.value = []
+    }
+    
+    // Verify tingkat 12 kelas are included
+    const tingkat12Kelas = kelasOptions.value.filter(k => k.tingkat === '12')
+    if (tingkat12Kelas.length === 0) {
+      console.warn('No tingkat 12 kelas found in response')
+    }
   } catch (error) {
     console.error('Failed to fetch kelas:', error)
+    toast.error('Gagal mengambil data kelas')
   }
 }
 

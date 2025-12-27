@@ -62,9 +62,15 @@
           </div>
         </template>
 
-        <template #cell-nama_ukk="{ item }">
-          <div class="text-sm font-medium text-gray-900">
-            {{ item.nama_ukk }}
+        <template #cell-kelas="{ item }">
+          <div class="text-sm text-gray-900">
+            {{ item.kelas?.nama_kelas || '-' }}
+          </div>
+        </template>
+
+        <template #cell-nama_du_di="{ item }">
+          <div class="text-sm text-gray-900">
+            {{ item.nama_du_di || '-' }}
           </div>
         </template>
 
@@ -126,7 +132,7 @@
               type="select"
               label="Tahun Ajaran"
               placeholder="Pilih tahun ajaran"
-              :options="tahunAjaranOptions"
+              :options="tahunAjaranOptions.map(ta => ({ value: ta.id, label: `${ta.tahun} - Semester ${ta.semester}` }))"
               required
               :error="errors.tahun_ajaran_id"
             />
@@ -145,6 +151,20 @@
           </div>
 
           <FormField
+            v-model="form.kelas_id"
+            type="select"
+            label="Kelas"
+            placeholder="Pilih kelas"
+            :options="kelasOptions"
+            option-value="id"
+            option-label="nama_kelas"
+            required
+            :error="errors.kelas_id"
+            :disabled="!form.jurusan_id"
+            @update:model-value="onKelasChange"
+          />
+
+          <FormField
             v-model="form.siswa_id"
             type="select"
             label="Siswa"
@@ -154,16 +174,15 @@
             option-label="label"
             required
             :error="errors.siswa_id"
-            :disabled="!form.jurusan_id"
+            :disabled="!form.kelas_id"
           />
 
           <FormField
-            v-model="form.nama_ukk"
+            v-model="form.nama_du_di"
             type="text"
-            label="Nama UKK"
-            placeholder="Masukkan nama UKK"
-            required
-            :error="errors.nama_ukk"
+            label="Nama DU/DI"
+            placeholder="Masukkan nama DU/DI"
+            :error="errors.nama_du_di"
           />
 
           <FormField
@@ -219,7 +238,7 @@
           <div v-if="form.nilai_teori && form.nilai_praktek" class="bg-blue-50 p-4 rounded-lg">
             <div class="text-sm text-gray-700">
               <div class="font-medium mb-1">Perhitungan Nilai:</div>
-              <div>Nilai Akhir: <span class="font-semibold">{{ calculateNilaiAkhir() }}</span> (40% Teori + 60% Praktek)</div>
+              <div>Nilai Akhir: <span class="font-semibold">{{ calculateNilaiAkhir() }}</span> (30% Teori + 70% Praktek)</div>
               <div>Predikat: <span class="font-semibold">{{ calculatePredikat() }}</span></div>
             </div>
           </div>
@@ -265,7 +284,8 @@ const form = ref({
   id: null,
   siswa_id: '',
   jurusan_id: '',
-  nama_ukk: '',
+  kelas_id: '',
+  nama_du_di: '',
   tanggal_ujian: '',
   nilai_teori: '',
   nilai_praktek: '',
@@ -275,6 +295,7 @@ const form = ref({
 })
 
 const jurusanOptions = ref([])
+const kelasOptions = ref([])
 const siswaOptions = ref([])
 const guruOptions = ref([])
 const tahunAjaranOptions = ref([])
@@ -282,7 +303,8 @@ const tahunAjaranOptions = ref([])
 const columns = [
   { key: 'siswa', label: 'Siswa' },
   { key: 'jurusan', label: 'Jurusan' },
-  { key: 'nama_ukk', label: 'Nama UKK' },
+  { key: 'kelas', label: 'Kelas' },
+  { key: 'nama_du_di', label: 'DU/DI' },
   { key: 'tanggal_ujian', label: 'Tanggal Ujian' },
   { key: 'nilai', label: 'Nilai' },
   { key: 'predikat', label: 'Predikat' },
@@ -311,7 +333,7 @@ const tahunAjaranFilterOptions = computed(() => [
 
 const calculateNilaiAkhir = () => {
   if (!form.value.nilai_teori || !form.value.nilai_praktek) return '-'
-  const nilai = (parseFloat(form.value.nilai_teori) * 0.4) + (parseFloat(form.value.nilai_praktek) * 0.6)
+  const nilai = (parseFloat(form.value.nilai_teori) * 0.3) + (parseFloat(form.value.nilai_praktek) * 0.7)
   return nilai.toFixed(2)
 }
 
@@ -341,17 +363,18 @@ const fetchUkk = async () => {
     if (filters.value.search) params.append('search', filters.value.search)
 
     const response = await axios.get(`/admin/ukk?${params.toString()}`)
-    // Handle paginated response
-    if (response.data.data) {
-      ukk.value = response.data
+    // Handle paginated response - extract the data array
+    if (response.data.data && Array.isArray(response.data.data)) {
+      ukk.value = response.data.data
     } else if (Array.isArray(response.data)) {
-      ukk.value = { data: response.data }
-    } else {
       ukk.value = response.data
+    } else {
+      ukk.value = []
     }
   } catch (error) {
     console.error('Error fetching UKK:', error)
     toast.error('Gagal mengambil data UKK')
+    ukk.value = []
   } finally {
     loading.value = false
   }
@@ -366,8 +389,27 @@ const fetchJurusan = async () => {
   }
 }
 
-const fetchSiswa = async (jurusanId) => {
+const fetchKelas = async (jurusanId) => {
   if (!jurusanId) {
+    kelasOptions.value = []
+    return
+  }
+  try {
+    const response = await axios.get('/admin/kelas', {
+      params: {
+        per_page: 100
+      }
+    })
+    const allKelas = response.data.data || response.data
+    // Filter kelas by jurusan and tingkat 12 only
+    kelasOptions.value = allKelas.filter(k => k.jurusan_id == jurusanId && k.tingkat == '12')
+  } catch (error) {
+    console.error('Error fetching kelas:', error)
+  }
+}
+
+const fetchSiswa = async (kelasId) => {
+  if (!kelasId) {
     siswaOptions.value = []
     return
   }
@@ -379,8 +421,8 @@ const fetchSiswa = async (jurusanId) => {
       }
     })
     const allSiswa = response.data.data || response.data
-    // Filter siswa by jurusan
-    const filteredSiswa = allSiswa.filter(s => s.kelas?.jurusan_id == jurusanId)
+    // Filter siswa by kelas
+    const filteredSiswa = allSiswa.filter(s => s.kelas_id == kelasId)
     siswaOptions.value = filteredSiswa.map(s => ({
       id: s.id,
       label: `${s.nama_lengkap} (${s.nis})`
@@ -401,17 +443,35 @@ const fetchGuru = async () => {
 
 const fetchTahunAjaran = async () => {
   try {
-    const response = await axios.get('/lookup/tahun-ajaran')
-    tahunAjaranOptions.value = response.data
+    const response = await axios.get('/admin/tahun-ajaran', {
+      params: {
+        per_page: 100
+      }
+    })
+    if (response.data.data) {
+      tahunAjaranOptions.value = response.data.data
+    } else if (Array.isArray(response.data)) {
+      tahunAjaranOptions.value = response.data
+    }
   } catch (error) {
     console.error('Error fetching tahun ajaran:', error)
   }
 }
 
 const onJurusanChange = () => {
+  form.value.kelas_id = ''
   form.value.siswa_id = ''
+  kelasOptions.value = []
+  siswaOptions.value = []
   if (form.value.jurusan_id) {
-    fetchSiswa(form.value.jurusan_id)
+    fetchKelas(form.value.jurusan_id)
+  }
+}
+
+const onKelasChange = () => {
+  form.value.siswa_id = ''
+  if (form.value.kelas_id) {
+    fetchSiswa(form.value.kelas_id)
   } else {
     siswaOptions.value = []
   }
@@ -422,13 +482,14 @@ const handleSearch = (searchTerm) => {
   fetchUkk()
 }
 
-const editUkk = (item) => {
+const editUkk = async (item) => {
   isEditing.value = true
   form.value = {
     id: item.id,
     siswa_id: item.siswa_id,
     jurusan_id: item.jurusan_id,
-    nama_ukk: item.nama_ukk,
+    kelas_id: item.kelas_id || item.kelas?.id || '',
+    nama_du_di: item.nama_du_di || '',
     tanggal_ujian: item.tanggal_ujian ? item.tanggal_ujian.split('T')[0] : '',
     nilai_teori: item.nilai_teori || '',
     nilai_praktek: item.nilai_praktek || '',
@@ -437,13 +498,16 @@ const editUkk = (item) => {
     tahun_ajaran_id: item.tahun_ajaran_id
   }
   if (item.jurusan_id) {
-    fetchSiswa(item.jurusan_id)
+    await fetchKelas(item.jurusan_id)
+    if (item.kelas_id || item.kelas?.id) {
+      await fetchSiswa(item.kelas_id || item.kelas?.id)
+    }
   }
   showForm.value = true
 }
 
 const deleteUkk = async (item) => {
-  if (!confirm(`Apakah Anda yakin ingin menghapus UKK "${item.nama_ukk}" untuk siswa ${item.siswa?.nama_lengkap}?`)) {
+  if (!confirm(`Apakah Anda yakin ingin menghapus UKK untuk siswa ${item.siswa?.nama_lengkap}?`)) {
     return
   }
 
@@ -465,7 +529,8 @@ const closeForm = () => {
     id: null,
     siswa_id: '',
     jurusan_id: '',
-    nama_ukk: '',
+    kelas_id: '',
+    nama_du_di: '',
     tanggal_ujian: '',
     nilai_teori: '',
     nilai_praktek: '',
@@ -473,6 +538,7 @@ const closeForm = () => {
     penguji_eksternal: '',
     tahun_ajaran_id: ''
   }
+  kelasOptions.value = []
   siswaOptions.value = []
 }
 

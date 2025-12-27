@@ -26,6 +26,7 @@ export const menuConfig = {
       items: [
         { label: 'Rapor Hasil Belajar', to: '/admin/cetak-rapor/hasil-belajar', icon: 'document-text' },
         { label: 'Rapor Hasil P5', to: '/admin/cetak-rapor/p5', icon: 'document-report' },
+        { label: 'Nilai UKK', to: '/wali-kelas/cetak-rapor/p5', icon: 'document-report' },
         { label: 'Legger', to: '/admin/cetak-rapor/legger', icon: 'table' }
       ]
     }
@@ -81,6 +82,7 @@ export const menuConfig = {
       items: [
         { label: 'Rapor Belajar', to: '/wali-kelas/cetak-rapor/belajar', icon: 'document-text' },
         { label: 'Rapor P5', to: '/wali-kelas/cetak-rapor/p5', icon: 'document-report' },
+        { label: 'Nilai UKK', to: '/wali-kelas/cetak-rapor/p5', icon: 'document-report' },
         { label: 'Legger', to: '/wali-kelas/cetak-rapor/legger', icon: 'table' },
         { label: 'Profil Siswa', to: '/wali-kelas/cetak-rapor/profil-siswa', icon: 'user-circle' }
       ]

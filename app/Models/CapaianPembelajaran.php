@@ -22,6 +22,11 @@ class CapaianPembelajaran extends Model
         'deskripsi',
         'fase',
         'elemen',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     /**

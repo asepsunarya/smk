@@ -73,9 +73,10 @@ class CapaianPembelajaranController extends Controller
         $request->validate([
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'kode_cp' => 'required|string|max:50',
-            'deskripsi' => 'required|string',
-            'fase' => 'required|string|in:A,B,C,D,E,F',
+            'deskripsi' => 'required|string|max:200',
+            'fase' => 'required|string|in:10,11,12',
             'elemen' => 'required|string|in:pemahaman,keterampilan,sikap',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $cp = CapaianPembelajaran::create($request->only([
@@ -84,6 +85,7 @@ class CapaianPembelajaranController extends Controller
             'deskripsi',
             'fase',
             'elemen',
+            'is_active',
         ]));
 
         return response()->json([
@@ -116,9 +118,10 @@ class CapaianPembelajaranController extends Controller
     {
         $request->validate([
             'kode_cp' => 'sometimes|required|string|max:50',
-            'deskripsi' => 'sometimes|required|string',
-            'fase' => 'sometimes|required|string|in:A,B,C,D,E,F',
+            'deskripsi' => 'sometimes|required|string|max:200',
+            'fase' => 'sometimes|required|string|in:10,11,12',
             'elemen' => 'sometimes|required|string|in:pemahaman,keterampilan,sikap',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $capaianPembelajaran->update($request->only([
@@ -126,6 +129,7 @@ class CapaianPembelajaranController extends Controller
             'deskripsi',
             'fase',
             'elemen',
+            'is_active',
         ]));
 
         return response()->json([
