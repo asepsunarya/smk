@@ -76,7 +76,10 @@ class WaliKelasController extends Controller
                 'email' => $user->email,
                 'guru' => $guru,
                 'kelas_as_wali' => $items->map(function ($item) {
-                    return $item->kelas;
+                    $kelas = $item->kelas;
+                    // Add wali_kelas_id to kelas data for easy reference
+                    $kelas->wali_kelas_id = $item->id;
+                    return $kelas;
                 }),
                 'total_kelas' => $items->count(),
                 'total_siswa' => $items->sum(function ($item) {
@@ -219,9 +222,18 @@ class WaliKelasController extends Controller
 
             DB::commit();
 
+            // Reload the model with relationships
+            $waliKelas = $waliKelas->fresh(['guru.user', 'kelas.jurusan']);
+            
+            if (!$waliKelas) {
+                return response()->json([
+                    'message' => 'Wali kelas tidak ditemukan setelah update',
+                ], 404);
+            }
+
             return response()->json([
                 'message' => 'Wali kelas berhasil diperbarui',
-                'data' => $waliKelas->fresh()->load(['guru.user', 'kelas.jurusan']),
+                'data' => $waliKelas,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -339,5 +351,37 @@ class WaliKelasController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Get WaliKelas ID by guru_id and kelas_id.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function findId(Request $request)
+    {
+        $request->validate([
+            'guru_id' => ['required', 'exists:guru,id'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
+        ]);
+
+        // Try to find with is_active = true first
+        $waliKelas = WaliKelas::where('guru_id', $request->guru_id)
+                              ->where('kelas_id', $request->kelas_id)
+                              ->first();
+        
+        if (!$waliKelas) {
+            return response()->json([
+                'message' => 'Wali kelas tidak ditemukan untuk kombinasi guru dan kelas ini',
+                'guru_id' => $request->guru_id,
+                'kelas_id' => $request->kelas_id,
+            ], 404);
+        }
+
+        return response()->json([
+            'id' => $waliKelas->id,
+            'data' => $waliKelas->load(['guru.user', 'kelas.jurusan']),
+        ]);
     }
 }

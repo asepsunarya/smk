@@ -64,23 +64,102 @@ class DashboardController extends Controller
     public function guru(Request $request)
     {
         $guru = $request->user()->guru;
+        
+        if (!$guru) {
+            return response()->json([
+                'message' => 'Data guru tidak ditemukan'
+            ], 404);
+        }
+
         $tahunAjaran = TahunAjaran::where('is_active', true)->first();
+        
+        if (!$tahunAjaran) {
+            return response()->json([
+                'message' => 'Tahun ajaran aktif tidak ditemukan'
+            ], 404);
+        }
+
+        // Get mata pelajaran yang diajar oleh guru ini
+        $mataPelajaran = MataPelajaran::where('guru_id', $guru->id)
+            ->where('is_active', true)
+            ->with('kelas.jurusan')
+            ->get();
+
+        // Get unique classes from mata pelajaran
+        $kelasIds = $mataPelajaran->pluck('kelas_id')->unique()->filter();
+        $kelas = Kelas::whereIn('id', $kelasIds)
+            ->with('jurusan')
+            ->withCount(['siswa' => function ($query) {
+                $query->where('status', 'aktif');
+            }])
+            ->get();
+
+        // Calculate total siswa from all classes
+        $totalSiswa = $kelas->sum('siswa_count');
+
+        // Get first mata pelajaran (for display)
+        $firstMapel = $mataPelajaran->first();
+
+        // Get recent grades
+        $recentGrades = Nilai::with(['siswa.user', 'mataPelajaran', 'siswa.kelas'])
+            ->where('guru_id', $guru->id)
+            ->where('tahun_ajaran_id', $tahunAjaran->id)
+            ->orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($nilai) {
+                return [
+                    'id' => $nilai->id,
+                    'siswa' => [
+                        'id' => $nilai->siswa->id,
+                        'nama_lengkap' => $nilai->siswa->nama_lengkap,
+                    ],
+                    'kelas' => [
+                        'id' => $nilai->siswa->kelas->id ?? null,
+                        'nama_kelas' => $nilai->siswa->kelas->nama_kelas ?? '-',
+                    ],
+                    'mata_pelajaran' => [
+                        'id' => $nilai->mataPelajaran->id,
+                        'nama_mapel' => $nilai->mataPelajaran->nama_mapel,
+                    ],
+                    'nilai_akhir' => $nilai->nilai_akhir,
+                    'tanggal_input' => $nilai->updated_at,
+                    'jenis_nilai' => 'Sumatif',
+                ];
+            });
+
+        // Get CP progress (simplified - can be enhanced later)
+        $cpProgress = [];
+
+        // Today's schedule (placeholder - can be enhanced with jadwal table)
+        $todaySchedule = [];
 
         $stats = [
-            'total_kelas' => 0,
-            'total_mapel' => 0,
-            'total_siswa' => 0,
-            'nilai_belum_input' => 0,
-            'jadwal_hari_ini' => [],
-            'recent_nilai' => Nilai::with(['siswa', 'mataPelajaran'])
-                ->where('guru_id', $guru->id)
-                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                ->orderBy('updated_at', 'desc')
-                ->take(10)
-                ->get(),
+            'total_kelas' => $kelas->count(),
+            'total_siswa' => $totalSiswa,
+            'mata_pelajaran' => $firstMapel ? [
+                'id' => $firstMapel->id,
+                'nama_mapel' => $firstMapel->nama_mapel,
+            ] : null,
         ];
 
-        return response()->json($stats);
+        return response()->json([
+            'stats' => $stats,
+            'classes' => $kelas->map(function ($k) {
+                return [
+                    'id' => $k->id,
+                    'nama_kelas' => $k->nama_kelas,
+                    'jurusan' => $k->jurusan ? [
+                        'id' => $k->jurusan->id,
+                        'nama_jurusan' => $k->jurusan->nama_jurusan,
+                    ] : null,
+                    'siswa_count' => $k->siswa_count,
+                ];
+            }),
+            'recent_grades' => $recentGrades,
+            'cp_progress' => $cpProgress,
+            'today_schedule' => $todaySchedule,
+        ]);
     }
 
     /**

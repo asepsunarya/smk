@@ -184,8 +184,10 @@ class CetakRaporController extends Controller
         }
 
         if ($request->has('tahun_ajaran_id')) {
-            $query->whereHas('nilaiP5.p5', function ($q) use ($request) {
-                $q->where('tahun_ajaran_id', $request->tahun_ajaran_id);
+            $query->whereHas('nilaiP5', function ($q) use ($request) {
+                $q->whereHas('p5', function ($qp) use ($request) {
+                    $qp->where('tahun_ajaran_id', $request->tahun_ajaran_id);
+                });
             });
         }
 
@@ -195,6 +197,7 @@ class CetakRaporController extends Controller
         $siswa->getCollection()->transform(function ($item) use ($request) {
             $tahunAjaranId = $request->tahun_ajaran_id;
             
+            // Use relationship query, not collection method
             $nilaiP5Query = $item->nilaiP5()->with(['p5.tahunAjaran', 'dimensi']);
             
             if ($tahunAjaranId) {

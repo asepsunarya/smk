@@ -70,11 +70,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
               </svg>
             </button>
-            <button @click="resetPassword(item)" class="text-yellow-600 hover:text-yellow-900">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-6 6H4a3 3 0 01-3-3V9a3 3 0 013-3h2M8 7a2 2 0 012-2h2m0 0a2 2 0 012 2M7 7a2 2 0 00-2 2m0 0a2 2 0 002 2h4a2 2 0 002-2m-2 0a2 2 0 00-2-2H7z"></path>
-              </svg>
-            </button>
             <button @click="moveClass(item)" class="text-green-600 hover:text-green-900">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
@@ -91,7 +86,7 @@
 
       <!-- Form Modal -->
       <Modal v-model:show="showForm" :title="isEditing ? 'Edit Siswa' : 'Tambah Siswa'" size="lg">
-        <form @submit.prevent="submitForm" class="space-y-4">
+        <form @submit.prevent="submitForm" id="siswa-form" class="space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               v-model="form.nis"
@@ -173,13 +168,6 @@
               label="No. HP"
               placeholder="Masukkan nomor HP"
               :error="errors.no_hp"
-            />
-            <FormField
-              v-model="form.email"
-              type="email"
-              label="Email"
-              placeholder="Masukkan email"
-              :error="errors.email"
             />
           </div>
 
@@ -316,7 +304,6 @@ const form = reactive({
   agama: '',
   alamat: '',
   no_hp: '',
-  email: '',
   nama_ayah: '',
   nama_ibu: '',
   no_hp_ortu: '',

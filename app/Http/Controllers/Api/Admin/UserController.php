@@ -66,26 +66,71 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'], // Optional, will be filled from selected data
             'email' => ['required', 'string', 'email', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', 'in:admin,guru,wali_kelas,kepala_sekolah,siswa'],
+            'guru_id' => ['nullable', 'exists:guru,id', 'required_if:role,guru,wali_kelas,kepala_sekolah'],
+            'siswa_id' => ['nullable', 'exists:siswa,id', 'required_if:role,siswa'],
             'nuptk' => ['nullable', 'string', 'unique:users'],
             'nis' => ['nullable', 'string', 'unique:users'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
         // Validate role-specific fields
-        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah']) && !$request->nuptk) {
-            return response()->json([
-                'message' => 'NUPTK wajib diisi untuk role guru, wali kelas, atau kepala sekolah',
-            ], 422);
-        }
+        if (in_array($request->role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
+            // For these roles, guru_id is required
+            if (!$request->guru_id) {
+                return response()->json([
+                    'message' => 'Guru harus dipilih untuk role ' . $request->role,
+                ], 422);
+            }
 
-        if ($request->role === 'siswa' && !$request->nis) {
-            return response()->json([
-                'message' => 'NIS wajib diisi untuk role siswa',
-            ], 422);
+            // Get data from guru
+            $guru = \App\Models\Guru::find($request->guru_id);
+            if ($guru && $guru->user_id) {
+                return response()->json([
+                    'message' => 'Guru ini sudah memiliki user',
+                ], 422);
+            }
+            
+            // Auto-fill name and NUPTK from guru
+            if ($guru) {
+                $request->merge([
+                    'name' => $guru->nama_lengkap,
+                    'nuptk' => $guru->nuptk,
+                ]);
+            }
+        } elseif ($request->role === 'siswa') {
+            // For siswa role, siswa_id is required
+            if (!$request->siswa_id) {
+                return response()->json([
+                    'message' => 'Siswa harus dipilih untuk role siswa',
+                ], 422);
+            }
+
+            // Get data from siswa
+            $siswa = \App\Models\Siswa::find($request->siswa_id);
+            if ($siswa && $siswa->user_id) {
+                return response()->json([
+                    'message' => 'Siswa ini sudah memiliki user',
+                ], 422);
+            }
+            
+            // Auto-fill name and NIS from siswa
+            if ($siswa) {
+                $request->merge([
+                    'name' => $siswa->nama_lengkap,
+                    'nis' => $siswa->nis,
+                ]);
+            }
+        } elseif ($request->role === 'admin') {
+            // Admin requires manual name input
+            if (!$request->name) {
+                return response()->json([
+                    'message' => 'Nama lengkap wajib diisi untuk role admin',
+                ], 422);
+            }
         }
 
         DB::beginTransaction();
@@ -100,11 +145,47 @@ class UserController extends Controller
                 'is_active' => $request->is_active ?? true,
             ]);
 
+            // Link guru to user if guru_id is provided
+            if ($request->guru_id) {
+                $guru = \App\Models\Guru::find($request->guru_id);
+                if ($guru) {
+                    $guru->update([
+                        'user_id' => $user->id,
+                        'nama_lengkap' => $request->name, // Update nama_lengkap to match user name
+                    ]);
+                }
+            }
+
+            // Link siswa to user if siswa_id is provided
+            if ($request->siswa_id) {
+                $siswa = \App\Models\Siswa::find($request->siswa_id);
+                if ($siswa) {
+                    $siswa->update([
+                        'user_id' => $user->id,
+                        'nama_lengkap' => $request->name, // Update nama_lengkap to match user name
+                    ]);
+                }
+            }
+
             DB::commit();
+
+            // Load relationships based on role
+            if ($user->role === 'siswa') {
+                $user->load(['siswa.kelas.jurusan']);
+            } else {
+                $user->load(['guru', 'siswa.kelas.jurusan']);
+                
+                // Load kelasAsWali separately if user has guru
+                if ($user->guru) {
+                    $user->setRelation('kelasAsWali', $user->kelasAsWali());
+                } else {
+                    $user->setRelation('kelasAsWali', collect());
+                }
+            }
 
             return response()->json([
                 'message' => 'User berhasil ditambahkan',
-                'data' => $user->load(['guru', 'siswa.kelas.jurusan', 'kelasAsWali']),
+                'data' => $user,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -127,11 +208,16 @@ class UserController extends Controller
             'guru',
             'siswa.kelas.jurusan',
             'siswa.kelas.waliKelas',
-            'kelasAsWali.jurusan',
-            'kelasAsWali.siswa',
             'catatanAkademik',
             'approvedRapor',
         ]);
+        
+        // Load kelasAsWali separately if user has guru
+        if ($user->guru) {
+            $user->setRelation('kelasAsWali', $user->kelasAsWali());
+        } else {
+            $user->setRelation('kelasAsWali', collect());
+        }
 
         return response()->json($user);
     }
@@ -180,9 +266,24 @@ class UserController extends Controller
 
             DB::commit();
 
+            // Load relationships based on role
+            $user = $user->fresh();
+            if ($user->role === 'siswa') {
+                $user->load(['siswa.kelas.jurusan']);
+            } else {
+                $user->load(['guru', 'siswa.kelas.jurusan']);
+                
+                // Load kelasAsWali separately if user has guru
+                if ($user->guru) {
+                    $user->setRelation('kelasAsWali', $user->kelasAsWali());
+                } else {
+                    $user->setRelation('kelasAsWali', collect());
+                }
+            }
+
             return response()->json([
                 'message' => 'User berhasil diperbarui',
-                'data' => $user->fresh()->load(['guru', 'siswa.kelas.jurusan', 'kelasAsWali']),
+                'data' => $user,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

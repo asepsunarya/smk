@@ -22,13 +22,13 @@
         </template>
 
         <template #filters>
-          <FormField
+          <!-- <FormField
             v-model="filters.status"
             type="select"
             placeholder="Status"
             :options="statusOptions"
             @update:model-value="fetchGuru"
-          />
+          /> -->
           <FormField
             v-model="filters.bidang_studi"
             type="text"
@@ -49,17 +49,11 @@
           </div>
         </template>
 
-        <template #cell-role="{ item }">
-          <span :class="getRoleBadge(item.user?.role)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-            {{ formatRole(item.user?.role) }}
-          </span>
-        </template>
-
-        <template #cell-status="{ item }">
+        <!-- <template #cell-status="{ item }">
           <span :class="getStatusBadge(item.status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
             {{ formatStatus(item.status) }}
           </span>
-        </template>
+        </template> -->
 
         <template #row-actions="{ item }">
           <div class="flex items-center space-x-2">
@@ -68,19 +62,19 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
               </svg>
             </button>
-            <button @click="resetPassword(item)" class="text-yellow-600 hover:text-yellow-900" title="Reset Password">
+            <!-- <button @click="resetPassword(item)" class="text-yellow-600 hover:text-yellow-900" title="Reset Password">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-6 6H4a3 3 0 01-3-3V9a3 3 0 013-3h2M8 7a2 2 0 012-2h2m0 0a2 2 0 012 2M7 7a2 2 0 00-2 2m0 0a2 2 0 002 2h4a2 2 0 002-2m-2 0a2 2 0 00-2-2H7z"></path>
               </svg>
-            </button>
-            <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'">
+            </button> -->
+            <!-- <button @click="toggleStatus(item)" class="text-indigo-600 hover:text-indigo-900" :title="item.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'">
               <svg v-if="item.status === 'aktif'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
               </svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-            </button>
+            </button> -->
             <button @click="deleteGuru(item)" class="text-red-600 hover:text-red-900" title="Hapus">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -93,30 +87,6 @@
       <!-- Form Modal -->
       <Modal v-model:show="showForm" :title="isEditing ? 'Edit Guru' : 'Tambah Guru'" size="lg">
         <form @submit.prevent="submitForm" id="guru-form" class="space-y-4">
-          <!-- User Selection (only for new guru) -->
-          <div v-if="!isEditing">
-            <FormField
-              v-model="form.user_id"
-              type="select"
-              label="Pilih User"
-              placeholder="Pilih user yang sudah ada"
-              :options="availableUserOptions"
-              option-value="id"
-              option-label="label"
-              required
-              :error="errors.user_id"
-              @update:model-value="onUserSelect"
-            />
-            <div v-if="selectedUser" class="mt-2 p-3 bg-blue-50 rounded-lg">
-              <p class="text-sm text-gray-700">
-                <strong>Nama:</strong> {{ selectedUser.name }}<br>
-                <strong>Email:</strong> {{ selectedUser.email }}<br>
-                <strong>Role:</strong> {{ getRoleLabel(selectedUser.role) }}<br>
-                <strong v-if="selectedUser.nuptk">NUPTK:</strong> {{ selectedUser.nuptk || '-' }}
-              </p>
-            </div>
-          </div>
-
           <!-- Display user info when editing -->
           <div v-if="isEditing && selectedGuru?.user" class="p-3 bg-gray-50 rounded-lg mb-4">
             <p class="text-sm text-gray-700">
@@ -128,12 +98,18 @@
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
+              v-model="form.nama_lengkap"
+              label="Nama Lengkap"
+              placeholder="Masukkan nama lengkap"
+              required
+              :error="errors.nama_lengkap"
+            />
+            <FormField
               v-model="form.nuptk"
               label="NUPTK"
               placeholder="Masukkan NUPTK"
-              :required="!isEditing"
+              required
               :error="errors.nuptk"
-              :disabled="isEditing"
             />
             <FormField
               v-model="form.jenis_kelamin"
@@ -198,7 +174,7 @@
               required
               :error="errors.tanggal_masuk"
             />
-            <FormField
+            <!-- <FormField
               v-if="isEditing"
               v-model="form.status"
               type="select"
@@ -207,7 +183,7 @@
               :options="statusOptions"
               required
               :error="errors.status"
-            />
+            /> -->
           </div>
           
           <div>
@@ -356,9 +332,8 @@ const filters = reactive({
 // Table columns
 const columns = [
   { key: 'nama_lengkap', label: 'Nama & NIP', sortable: true },
-  { key: 'role', label: 'Role', sortable: true },
   { key: 'bidang_studi', label: 'Bidang Studi', sortable: true },
-  { key: 'status', label: 'Status', sortable: true }
+  // { key: 'status', label: 'Status', sortable: true }
 ]
 
 // Options
@@ -460,14 +435,12 @@ const closeForm = () => {
 
 const openForm = () => {
   showForm.value = true
-  if (!isEditing.value) {
-    fetchAvailableUsers()
-  }
 }
 
 const editGuru = (guruItem) => {
   isEditing.value = true
   selectedGuru.value = guruItem
+  form.nama_lengkap = guruItem.nama_lengkap || ''
   form.nuptk = guruItem.nuptk || ''
   form.jenis_kelamin = guruItem.jenis_kelamin || ''
   form.tempat_lahir = guruItem.tempat_lahir || ''
@@ -492,6 +465,7 @@ const submitForm = async () => {
     
     // Only send required fields
     const payload = {
+      nama_lengkap: form.nama_lengkap,
       nuptk: form.nuptk,
       jenis_kelamin: form.jenis_kelamin,
       tempat_lahir: form.tempat_lahir,
@@ -504,11 +478,8 @@ const submitForm = async () => {
       tanggal_masuk: form.tanggal_masuk,
     }
 
-    // Add user_id only for new guru
-    if (!isEditing.value) {
-      payload.user_id = form.user_id
-    } else {
-      // Add status for editing
+    // Add status for editing
+    if (isEditing.value) {
       payload.status = form.status
     }
     

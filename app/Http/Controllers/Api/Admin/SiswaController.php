@@ -52,6 +52,7 @@ class SiswaController extends Controller
 
     /**
      * Store a newly created siswa.
+     * Only siswa data, no user required.
      *
      * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -62,35 +63,25 @@ class SiswaController extends Controller
             'nis' => ['required', 'string', 'unique:siswa'],
             'nisn' => ['nullable', 'string', 'unique:siswa'],
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
             'agama' => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
             'alamat' => ['required', 'string'],
             'no_hp' => ['nullable', 'string'],
-            'nama_ayah' => ['required', 'string'],
-            'nama_ibu' => ['required', 'string'],
+            'nama_ayah' => ['nullable', 'string'],
+            'nama_ibu' => ['nullable', 'string'],
             'pekerjaan_ayah' => ['nullable', 'string'],
             'pekerjaan_ibu' => ['nullable', 'string'],
             'no_hp_ortu' => ['nullable', 'string'],
             'kelas_id' => ['nullable', 'exists:kelas,id'],
-            'tanggal_masuk' => ['required', 'date'],
+            'tanggal_masuk' => ['nullable', 'date'],
         ]);
 
         DB::beginTransaction();
         try {
-            $user = User::create([
-                'name' => $request->nama_lengkap,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => 'siswa',
-                'nis' => $request->nis,
-            ]);
-
             $siswa = Siswa::create([
-                'user_id' => $user->id,
+                'user_id' => null, // No user linked yet
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
                 'nama_lengkap' => $request->nama_lengkap,
@@ -106,7 +97,7 @@ class SiswaController extends Controller
                 'pekerjaan_ibu' => $request->pekerjaan_ibu,
                 'no_hp_ortu' => $request->no_hp_ortu,
                 'kelas_id' => $request->kelas_id,
-                'tanggal_masuk' => $request->tanggal_masuk,
+                'tanggal_masuk' => $request->tanggal_masuk ?? now(),
                 'status' => 'aktif',
             ]);
 
@@ -114,7 +105,7 @@ class SiswaController extends Controller
 
             return response()->json([
                 'message' => 'Siswa berhasil ditambahkan',
-                'data' => $siswa->load(['user', 'kelas.jurusan']),
+                'data' => $siswa->load('kelas.jurusan'),
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -159,15 +150,14 @@ class SiswaController extends Controller
             'nis' => ['required', 'string', Rule::unique('siswa')->ignore($siswa->id)],
             'nisn' => ['nullable', 'string', Rule::unique('siswa')->ignore($siswa->id)],
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', Rule::unique('users')->ignore($siswa->user_id)],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
             'agama' => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
             'alamat' => ['required', 'string'],
             'no_hp' => ['nullable', 'string'],
-            'nama_ayah' => ['required', 'string'],
-            'nama_ibu' => ['required', 'string'],
+            'nama_ayah' => ['nullable', 'string'],
+            'nama_ibu' => ['nullable', 'string'],
             'pekerjaan_ayah' => ['nullable', 'string'],
             'pekerjaan_ibu' => ['nullable', 'string'],
             'no_hp_ortu' => ['nullable', 'string'],
@@ -177,11 +167,13 @@ class SiswaController extends Controller
 
         DB::beginTransaction();
         try {
-            $siswa->user->update([
-                'name' => $request->nama_lengkap,
-                'email' => $request->email,
-                'nis' => $request->nis,
-            ]);
+            // Update user's name and NIS if user exists
+            if ($siswa->user) {
+                $siswa->user->update([
+                    'name' => $request->nama_lengkap,
+                    'nis' => $request->nis,
+                ]);
+            }
 
             $siswa->update($request->except(['email', 'password']));
 
@@ -277,5 +269,23 @@ class SiswaController extends Controller
         return response()->json([
             'message' => 'Password berhasil direset',
         ]);
+    }
+
+    /**
+     * Get siswa that don't have user yet.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function availableSiswa(Request $request)
+    {
+        $siswa = Siswa::whereNull('user_id')
+            ->where('status', 'aktif')
+            ->with('kelas.jurusan')
+            ->select('id', 'nama_lengkap', 'nis', 'nisn', 'kelas_id')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return response()->json($siswa);
     }
 }

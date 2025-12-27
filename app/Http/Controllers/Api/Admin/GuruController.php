@@ -53,7 +53,7 @@ class GuruController extends Controller
 
     /**
      * Store a newly created guru.
-     * User must be selected from existing users.
+     * Only guru data, no user required.
      *
      * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -61,7 +61,8 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
+            'nama_lengkap' => ['required', 'string', 'max:255'],
+            'nuptk' => ['required', 'string', 'unique:guru'],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
@@ -75,41 +76,10 @@ class GuruController extends Controller
 
         DB::beginTransaction();
         try {
-            $user = User::findOrFail($request->user_id);
-
-            // Check if user already has guru profile
-            if ($user->guru) {
-                return response()->json([
-                    'message' => 'User ini sudah memiliki data guru',
-                ], 422);
-            }
-
-            // Verify user role is appropriate for guru
-            if (!in_array($user->role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
-                return response()->json([
-                    'message' => 'Role user tidak sesuai untuk guru',
-                ], 422);
-            }
-
-            // Get nuptk from user or request
-            $nuptk = $user->nuptk ?? $request->nuptk;
-            if (!$nuptk) {
-                return response()->json([
-                    'message' => 'NUPTK harus diisi',
-                ], 422);
-            }
-
-            // Check if nuptk already exists in guru table
-            if (Guru::where('nuptk', $nuptk)->exists()) {
-                return response()->json([
-                    'message' => 'NUPTK sudah digunakan',
-                ], 422);
-            }
-
             $guru = Guru::create([
-                'user_id' => $user->id,
-                'nuptk' => $nuptk,
-                'nama_lengkap' => $user->name, // Use name from user
+                'user_id' => null, // No user linked yet
+                'nuptk' => $request->nuptk,
+                'nama_lengkap' => $request->nama_lengkap,
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -126,7 +96,7 @@ class GuruController extends Controller
 
             return response()->json([
                 'message' => 'Guru berhasil ditambahkan',
-                'data' => $guru->load('user'),
+                'data' => $guru,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -307,5 +277,22 @@ class GuruController extends Controller
             ->get();
 
         return response()->json($users);
+    }
+
+    /**
+     * Get guru that don't have user yet.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function availableGuru(Request $request)
+    {
+        $guru = Guru::whereNull('user_id')
+            ->where('status', 'aktif')
+            ->select('id', 'nama_lengkap', 'nuptk', 'bidang_studi')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return response()->json($guru);
     }
 }

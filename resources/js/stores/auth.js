@@ -102,7 +102,16 @@ export const useAuthStore = defineStore('auth', {
         return user
       } catch (error) {
         console.error('Get user error:', error)
-        this.logout()
+        // Only logout if we got 401 and user was previously loaded
+        // This prevents logout during initial load on refresh
+        if (error.response?.status === 401 && this.user) {
+          this.logout()
+        } else if (error.response?.status === 401) {
+          // Token is invalid, clear it but don't trigger full logout
+          this.token = null
+          localStorage.removeItem('auth_token')
+          delete axios.defaults.headers.common['Authorization']
+        }
         throw error
       } finally {
         this.userLoading = false

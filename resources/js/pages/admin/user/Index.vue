@@ -104,11 +104,14 @@
         <form @submit.prevent="submitForm" id="user-form" class="space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
-              v-model="form.name"
-              label="Nama Lengkap"
-              placeholder="Masukkan nama lengkap"
+              v-model="form.role"
+              type="select"
+              label="Role"
+              placeholder="Pilih role terlebih dahulu"
+              :options="roleOptions"
               required
-              :error="errors.name"
+              :error="errors.role"
+              @update:model-value="handleRoleChange"
             />
             <FormField
               v-model="form.email"
@@ -119,16 +122,6 @@
               :error="errors.email"
             />
             <FormField
-              v-model="form.role"
-              type="select"
-              label="Role"
-              placeholder="Pilih role"
-              :options="roleOptions"
-              required
-              :error="errors.role"
-              @update:model-value="handleRoleChange"
-            />
-            <FormField
               v-if="!isEditing"
               v-model="form.password"
               type="password"
@@ -137,22 +130,86 @@
               required
               :error="errors.password"
             />
+            
+            <!-- Nama Lengkap - hanya untuk admin -->
             <FormField
-              v-if="needsNuptk"
-              v-model="form.nuptk"
-              label="NUPTK"
-              placeholder="Masukkan NUPTK"
-              :required="needsNuptk"
-              :error="errors.nuptk"
+              v-if="form.role === 'admin'"
+              v-model="form.name"
+              label="Nama Lengkap"
+              placeholder="Masukkan nama lengkap"
+              required
+              :error="errors.name"
             />
+            
+            <!-- Nama Lengkap - auto-fill dari guru untuk guru, wali_kelas, kepala_sekolah -->
+            <div v-if="['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role)" class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+              <input
+                type="text"
+                :value="form.name"
+                disabled
+                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                placeholder="Pilih guru terlebih dahulu"
+              />
+              <p class="text-xs text-gray-500">Nama akan diambil dari guru yang dipilih</p>
+            </div>
+            
+            <!-- Nama Lengkap - auto-fill dari siswa untuk siswa -->
+            <div v-if="form.role === 'siswa'" class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+              <input
+                type="text"
+                :value="form.name"
+                disabled
+                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                placeholder="Pilih siswa terlebih dahulu"
+              />
+              <p class="text-xs text-gray-500">Nama akan diambil dari siswa yang dipilih</p>
+            </div>
+            
+            <!-- Pilih Guru (for guru, wali_kelas, kepala_sekolah) -->
             <FormField
-              v-if="needsNis"
-              v-model="form.nis"
-              label="NIS"
-              placeholder="Masukkan NIS"
-              :required="needsNis"
-              :error="errors.nis"
+              v-if="['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role) && !isEditing"
+              v-model="form.guru_id"
+              type="select"
+              label="Pilih Guru"
+              placeholder="Pilih guru yang sudah ada"
+              :options="availableGuruOptions"
+              option-value="id"
+              option-label="label"
+              required
+              :error="errors.guru_id"
+              @update:model-value="onGuruSelect"
             />
+            <div v-if="['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role) && selectedGuru && !isEditing" class="p-3 bg-blue-50 rounded-lg">
+              <p class="text-sm text-gray-700">
+                <strong>Nama:</strong> {{ selectedGuru.nama_lengkap }}<br>
+                <strong>NUPTK:</strong> {{ selectedGuru.nuptk }}<br>
+                <strong>Bidang Studi:</strong> {{ selectedGuru.bidang_studi }}
+              </p>
+            </div>
+            
+            <!-- Pilih Siswa (for siswa) -->
+            <FormField
+              v-if="form.role === 'siswa' && !isEditing"
+              v-model="form.siswa_id"
+              type="select"
+              label="Pilih Siswa"
+              placeholder="Pilih siswa yang sudah ada"
+              :options="availableSiswaOptions"
+              option-value="id"
+              option-label="label"
+              required
+              :error="errors.siswa_id"
+              @update:model-value="onSiswaSelect"
+            />
+            <div v-if="form.role === 'siswa' && selectedSiswa && !isEditing" class="p-3 bg-blue-50 rounded-lg">
+              <p class="text-sm text-gray-700">
+                <strong>Nama:</strong> {{ selectedSiswa.nama_lengkap }}<br>
+                <strong>NIS:</strong> {{ selectedSiswa.nis }}<br>
+                <strong>Kelas:</strong> {{ selectedSiswa.kelas?.nama_kelas || '-' }}
+              </p>
+            </div>
             <FormField
               v-if="isEditing"
               v-model="form.is_active"
@@ -264,10 +321,20 @@ const form = reactive({
   email: '',
   password: '',
   role: '',
+  guru_id: '',
+  siswa_id: '',
   nuptk: '',
   nis: '',
   is_active: true
 })
+
+// Available guru for selection
+const availableGuruOptions = ref([])
+const selectedGuru = ref(null)
+
+// Available siswa for selection
+const availableSiswaOptions = ref([])
+const selectedSiswa = ref(null)
 
 const resetPasswordForm = reactive({
   password: '',
@@ -344,6 +411,60 @@ const fetchUsers = async () => {
   }
 }
 
+const fetchAvailableGuru = async () => {
+  try {
+    const response = await axios.get('/admin/guru/available-guru')
+    availableGuruOptions.value = response.data.map(guru => ({
+      ...guru,
+      label: `${guru.nama_lengkap} (${guru.nuptk}) - ${guru.bidang_studi}`
+    }))
+  } catch (error) {
+    console.error('Failed to fetch available guru:', error)
+    toast.error('Gagal mengambil data guru')
+  }
+}
+
+const fetchAvailableSiswa = async () => {
+  try {
+    const response = await axios.get('/admin/siswa/available-siswa')
+    availableSiswaOptions.value = response.data.map(siswa => ({
+      ...siswa,
+      label: `${siswa.nama_lengkap} (${siswa.nis}) - ${siswa.kelas?.nama_kelas || '-'}`
+    }))
+  } catch (error) {
+    console.error('Failed to fetch available siswa:', error)
+    toast.error('Gagal mengambil data siswa')
+  }
+}
+
+const onGuruSelect = (guruId) => {
+  const guru = availableGuruOptions.value.find(g => g.id == guruId)
+  if (guru) {
+    selectedGuru.value = guru
+    // Auto-fill name and NUPTK from guru (nama lengkap wajib dari guru)
+    form.name = guru.nama_lengkap
+    form.nuptk = guru.nuptk
+  } else {
+    selectedGuru.value = null
+    form.name = ''
+    form.nuptk = ''
+  }
+}
+
+const onSiswaSelect = (siswaId) => {
+  const siswa = availableSiswaOptions.value.find(s => s.id == siswaId)
+  if (siswa) {
+    selectedSiswa.value = siswa
+    // Auto-fill name and NIS from siswa
+    form.name = siswa.nama_lengkap
+    form.nis = siswa.nis
+  } else {
+    selectedSiswa.value = null
+    form.name = ''
+    form.nis = ''
+  }
+}
+
 const resetForm = () => {
   Object.keys(form).forEach(key => {
     if (key === 'is_active') {
@@ -355,6 +476,10 @@ const resetForm = () => {
   errors.value = {}
   isEditing.value = false
   selectedUser.value = null
+  selectedGuru.value = null
+  selectedSiswa.value = null
+  availableGuruOptions.value = []
+  availableSiswaOptions.value = []
 }
 
 const closeForm = () => {
@@ -363,9 +488,27 @@ const closeForm = () => {
 }
 
 const handleRoleChange = () => {
-  // Clear NUPTK/NIS when role changes
+  // Clear all fields when role changes
+  form.name = ''
   form.nuptk = ''
   form.nis = ''
+  form.guru_id = ''
+  form.siswa_id = ''
+  selectedGuru.value = null
+  selectedSiswa.value = null
+  
+  // Fetch available data based on role
+  if (['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role) && !isEditing.value) {
+    fetchAvailableGuru()
+  } else if (form.role === 'siswa' && !isEditing.value) {
+    fetchAvailableSiswa()
+  }
+}
+
+const openForm = () => {
+  resetForm()
+  showForm.value = true
+  // Will fetch guru when role is selected
 }
 
 const editUser = (user) => {
@@ -385,13 +528,60 @@ const submitForm = async () => {
     submitting.value = true
     errors.value = {}
 
+    // Validate: if role requires guru, guru_id must be selected
+    if (['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role) && !isEditing.value && !form.guru_id) {
+      errors.value.guru_id = [`Guru harus dipilih untuk role ${form.role}`]
+      toast.error('Pilih guru terlebih dahulu')
+      submitting.value = false
+      return
+    }
+
+    // Validate: if role is siswa, siswa_id must be selected
+    if (form.role === 'siswa' && !isEditing.value && !form.siswa_id) {
+      errors.value.siswa_id = ['Siswa harus dipilih untuk role siswa']
+      toast.error('Pilih siswa terlebih dahulu')
+      submitting.value = false
+      return
+    }
+
+    // Validate: if role requires data selection, name must be filled
+    if (['guru', 'wali_kelas', 'kepala_sekolah', 'siswa'].includes(form.role) && !isEditing.value && !form.name) {
+      errors.value.name = ['Nama lengkap harus diambil dari data yang dipilih']
+      toast.error('Pilih data terlebih dahulu')
+      submitting.value = false
+      return
+    }
+
+    // Validate: admin requires manual name input
+    if (form.role === 'admin' && !form.name) {
+      errors.value.name = ['Nama lengkap wajib diisi untuk role admin']
+      toast.error('Nama lengkap wajib diisi')
+      submitting.value = false
+      return
+    }
+
     const url = isEditing.value ? `/admin/user/${selectedUser.value.id}` : '/admin/user'
     const method = isEditing.value ? 'put' : 'post'
     
     const payload = { ...form }
     if (isEditing.value) {
       delete payload.password
+      delete payload.guru_id // Don't allow changing guru on edit
     }
+    
+    // Only include guru_id if role requires it
+    if (!['guru', 'wali_kelas', 'kepala_sekolah'].includes(form.role)) {
+      delete payload.guru_id
+    }
+    
+    // Only include siswa_id if role is siswa
+    if (form.role !== 'siswa') {
+      delete payload.siswa_id
+    }
+    
+    // Remove NUPTK and NIS from payload (will be auto-filled from selected data)
+    delete payload.nuptk
+    delete payload.nis
     
     await axios[method](url, payload)
     

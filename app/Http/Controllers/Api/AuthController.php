@@ -127,7 +127,15 @@ class AuthController extends Controller
             $profileData = $user->guru;
             
             if ($user->role === 'wali_kelas') {
-                $profileData->load('user.kelasAsWali.siswa');
+                // Load wali kelas assignments and their classes
+                // Use relationship from guru, not from user
+                $profileData->load([
+                    'waliKelasAktif.kelas' => function ($query) {
+                        $query->with('jurusan')->withCount(['siswa' => function ($q) {
+                            $q->where('status', 'aktif');
+                        }]);
+                    }
+                ]);
             }
         }
 

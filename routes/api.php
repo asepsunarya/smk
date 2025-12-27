@@ -60,11 +60,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         // Master Data Management
+        Route::get('siswa/available-siswa', [SiswaController::class, 'availableSiswa']);
         Route::apiResource('siswa', SiswaController::class);
         Route::post('siswa/{siswa}/move-class', [SiswaController::class, 'moveClass']);
         Route::post('siswa/{siswa}/reset-password', [SiswaController::class, 'resetPassword']);
 
         Route::get('guru/available-users', [GuruController::class, 'availableUsers']);
+        Route::get('guru/available-guru', [GuruController::class, 'availableGuru']);
         Route::apiResource('guru', GuruController::class);
         Route::post('guru/{guru}/reset-password', [GuruController::class, 'resetPassword']);
         Route::post('guru/{guru}/toggle-status', [GuruController::class, 'toggleStatus']);
@@ -87,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('wali-kelas/guru/{guru}/kelas', [WaliKelasController::class, 'getKelas']);
         Route::post('wali-kelas/assign', [WaliKelasController::class, 'assign']);
         Route::post('wali-kelas/remove', [WaliKelasController::class, 'remove']);
+        Route::get('wali-kelas/find-id', [WaliKelasController::class, 'findId']);
 
         Route::apiResource('ekstrakurikuler', EkstrakurikulerController::class);
         Route::post('ekstrakurikuler/{ekstrakurikuler}/toggle-status', [EkstrakurikulerController::class, 'toggleStatus']);

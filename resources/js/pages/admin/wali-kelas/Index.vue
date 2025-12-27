@@ -89,6 +89,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
               </svg>
             </button>
+            <button @click="editWaliKelas(item)" class="text-blue-600 hover:text-blue-900" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </button>
             <button @click="removeWaliKelas(item)" class="text-red-600 hover:text-red-900" title="Hapus dari Kelas">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -210,6 +215,68 @@
         </template>
       </Modal>
 
+      <!-- Edit Form Modal -->
+      <Modal v-model:show="showEditForm" :title="`Edit Penetapan Kelas - ${selectedWaliKelas?.name}`" size="lg">
+        <form @submit.prevent="submitEdit" id="edit-form" class="space-y-4">
+          <!-- Display Guru Info (Read-only) -->
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-sm font-medium text-gray-700">Guru/Wali Kelas</p>
+            <p class="text-sm text-gray-900 mt-1">{{ selectedWaliKelas?.name }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ selectedWaliKelas?.guru?.nuptk || selectedWaliKelas?.email }}</p>
+          </div>
+
+          <!-- Select Kelas to Edit -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Pilih Kelas yang Akan Diedit</label>
+            <FormField
+              v-model="editForm.old_kelas_id"
+              type="select"
+              label="Kelas Saat Ini"
+              placeholder="Pilih kelas yang akan diubah"
+              :options="selectedWaliKelas?.kelas_as_wali || []"
+              option-value="id"
+              option-label="nama_kelas"
+              required
+              :error="editErrors.old_kelas_id"
+              @update:model-value="onOldKelasSelect"
+            />
+          </div>
+
+          <!-- New Kelas Selection -->
+          <FormField
+            v-model="editForm.kelas_id"
+            type="select"
+            label="Kelas Baru"
+            placeholder="Pilih kelas baru"
+            :options="kelasOptions"
+            option-value="id"
+            option-label="nama_kelas"
+            required
+            :error="editErrors.kelas_id"
+          />
+          
+          <div v-if="selectedEditKelasInfo" class="p-3 bg-blue-50 rounded-lg">
+            <p class="text-sm text-gray-600">
+              <strong>Info Kelas Baru:</strong> {{ selectedEditKelasInfo.nama_kelas }} - {{ selectedEditKelasInfo.jurusan?.nama_jurusan }}
+            </p>
+            <p v-if="selectedEditKelasInfo.wali_kelas_id" class="text-sm text-yellow-600 mt-1">
+              ⚠️ Kelas ini sudah memiliki wali kelas. Mengubah penetapan akan menggantikan wali kelas yang ada.
+            </p>
+          </div>
+        </form>
+
+        <template #footer>
+          <button type="submit" form="edit-form" :disabled="editing" class="btn btn-primary">
+            <svg v-if="editing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ editing ? 'Menyimpan...' : 'Simpan Perubahan' }}
+          </button>
+          <button type="button" @click="closeEditForm" class="btn btn-secondary mr-3">Batal</button>
+        </template>
+      </Modal>
+
       <!-- Remove Confirmation Modal -->
       <Modal v-model:show="showRemoveModal" title="Hapus Wali Kelas dari Kelas" size="sm">
         <div class="space-y-4">
@@ -259,17 +326,25 @@ const jurusanOptions = ref([])
 const loading = ref(true)
 const loadingDetail = ref(false)
 const submitting = ref(false)
+const editing = ref(false)
 const removing = ref(false)
 
 // Form state
 const showAssignForm = ref(false)
+const showEditForm = ref(false)
 const showDetailModal = ref(false)
 const showRemoveModal = ref(false)
 const selectedWaliKelas = ref(null)
+const currentWaliKelasId = ref(null)
 
 // Form data
 const assignForm = reactive({
   guru_id: '',
+  kelas_id: ''
+})
+
+const editForm = reactive({
+  old_kelas_id: '',
   kelas_id: ''
 })
 
@@ -278,6 +353,7 @@ const removeForm = reactive({
 })
 
 const errors = ref({})
+const editErrors = ref({})
 const removeErrors = ref({})
 
 // Filters
@@ -298,6 +374,11 @@ const columns = [
 const selectedKelasInfo = computed(() => {
   if (!assignForm.kelas_id) return null
   return kelasOptions.value.find(k => k.id == assignForm.kelas_id)
+})
+
+const selectedEditKelasInfo = computed(() => {
+  if (!editForm.kelas_id) return null
+  return kelasOptions.value.find(k => k.id == editForm.kelas_id)
 })
 
 // Methods
@@ -442,6 +523,150 @@ const viewDetail = async (waliKelasItem) => {
   selectedWaliKelas.value = waliKelasItem
   showDetailModal.value = true
   await fetchDetail(waliKelasItem.guru_id)
+}
+
+const editWaliKelas = async (waliKelasItem) => {
+  selectedWaliKelas.value = waliKelasItem
+  
+  // Reset form
+  editForm.old_kelas_id = ''
+  editForm.kelas_id = ''
+  currentWaliKelasId.value = null
+  
+  // If only one kelas, auto-select it
+  if (waliKelasItem.kelas_as_wali && waliKelasItem.kelas_as_wali.length === 1) {
+    editForm.old_kelas_id = waliKelasItem.kelas_as_wali[0].id
+    await onOldKelasSelect(waliKelasItem.kelas_as_wali[0].id)
+  }
+  
+  showEditForm.value = true
+}
+
+const onOldKelasSelect = async (kelasId) => {
+  if (!kelasId || !selectedWaliKelas.value) return
+  
+  // First, try to get ID from kelas data if available
+  const kelasData = selectedWaliKelas.value.kelas_as_wali?.find(k => k.id == kelasId)
+  if (kelasData && kelasData.wali_kelas_id) {
+    currentWaliKelasId.value = kelasData.wali_kelas_id
+    return
+  }
+  
+  // If not found in data, fetch from API
+  try {
+    const response = await axios.get('/admin/wali-kelas/find-id', {
+      params: {
+        guru_id: selectedWaliKelas.value.guru_id,
+        kelas_id: kelasId
+      }
+    })
+    
+    if (response.data && response.data.id) {
+      currentWaliKelasId.value = response.data.id
+    } else {
+      console.warn('Wali kelas ID not found in response:', response.data)
+      currentWaliKelasId.value = null
+    }
+  } catch (error) {
+    console.error('Error fetching wali kelas ID:', error)
+    if (error.response?.status === 404) {
+      console.error('Response:', error.response?.data)
+    }
+    currentWaliKelasId.value = null
+  }
+}
+
+const resetEditForm = () => {
+  editForm.old_kelas_id = ''
+  editForm.kelas_id = ''
+  editErrors.value = {}
+  currentWaliKelasId.value = null
+}
+
+const closeEditForm = () => {
+  showEditForm.value = false
+  resetEditForm()
+}
+
+const submitEdit = async () => {
+  try {
+    editing.value = true
+    editErrors.value = {}
+    
+    if (!editForm.old_kelas_id) {
+      toast.error('Pilih kelas yang akan diubah terlebih dahulu')
+      editing.value = false
+      return
+    }
+    
+    if (!editForm.kelas_id) {
+      toast.error('Pilih kelas baru terlebih dahulu')
+      editing.value = false
+      return
+    }
+    
+    if (editForm.old_kelas_id === editForm.kelas_id) {
+      toast.error('Kelas baru harus berbeda dengan kelas saat ini')
+      editing.value = false
+      return
+    }
+    
+    if (!selectedWaliKelas.value || !selectedWaliKelas.value.guru_id) {
+      toast.error('Data wali kelas tidak valid')
+      editing.value = false
+      return
+    }
+    
+    // Get WaliKelas ID - always fetch to ensure we have the correct ID
+    let waliKelasId = null
+    
+    try {
+      const response = await axios.get('/admin/wali-kelas/find-id', {
+        params: {
+          guru_id: selectedWaliKelas.value.guru_id,
+          kelas_id: editForm.old_kelas_id
+        }
+      })
+      
+      if (response.data && response.data.id) {
+        waliKelasId = response.data.id
+      } else {
+        toast.error('ID wali kelas tidak ditemukan. Silakan hapus dan buat ulang penugasan.')
+        editing.value = false
+        return
+      }
+    } catch (error) {
+      console.error('Error finding wali kelas ID:', error)
+      toast.error('Gagal menemukan data wali kelas. Silakan coba lagi.')
+      editing.value = false
+      return
+    }
+    
+    if (!waliKelasId) {
+      toast.error('ID wali kelas tidak ditemukan. Silakan hapus dan buat ulang penugasan.')
+      editing.value = false
+      return
+    }
+
+    // Update only kelas_id
+    await axios.put(`/admin/wali-kelas/${waliKelasId}`, {
+      kelas_id: editForm.kelas_id
+    })
+    
+    toast.success('Penetapan kelas berhasil diperbarui')
+    closeEditForm()
+    fetchWaliKelas()
+    fetchKelas() // Refresh kelas options
+  } catch (error) {
+    if (error.response?.status === 422) {
+      editErrors.value = error.response.data.errors || {}
+      toast.error('Validasi gagal. Periksa kembali data yang diinput.')
+    } else {
+      toast.error(error.response?.data?.message || 'Terjadi kesalahan saat memperbarui penetapan kelas')
+    }
+  } finally {
+    editing.value = false
+  }
 }
 
 const removeWaliKelas = (waliKelasItem) => {

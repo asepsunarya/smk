@@ -83,7 +83,24 @@ const routes = [
     path: '/',
     name: 'dashboard',
     component: Dashboard,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
+    beforeEnter: async (to, from, next) => {
+      const authStore = useAuthStore()
+      // Load user if not loaded
+      if (authStore.token && !authStore.user) {
+        try {
+          await authStore.getUser()
+        } catch (error) {
+          console.error('Failed to load user:', error)
+        }
+      }
+      // Redirect to role-specific dashboard
+      if (authStore.user) {
+        next(authStore.getDefaultRoute())
+      } else {
+        next('/login')
+      }
+    }
   },
   
   // Admin routes
@@ -182,7 +199,7 @@ const routes = [
           path: 'cetak-rapor/legger',
           name: 'admin.cetak-rapor.legger',
           component: CetakRaporLeggerIndex
-        },
+      },
       {
         path: 'tahun-ajaran',
         name: 'admin.tahun-ajaran.index',
@@ -326,22 +343,71 @@ const router = createRouter({
 
 // Configure axios response interceptor after router is created
 let routerInstance = router
+let errorRetryCount = new Map() // Track retry count per URL to prevent infinite loops
+let lastErrorTime = new Map() // Track last error time per URL
+
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Reset retry count on successful response
+    if (response.config?.url) {
+      errorRetryCount.delete(response.config.url)
+      lastErrorTime.delete(response.config.url)
+    }
+    return response
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      const authStore = useAuthStore()
-      authStore.logout()
-      // Use router.push with error handling to avoid timing issues
-      if (routerInstance) {
-        routerInstance.push('/login').catch(() => {
-          // Fallback to window.location if router push fails
-          window.location.href = '/login'
-        })
+    const url = error.config?.url || ''
+    const status = error.response?.status
+    const now = Date.now()
+    
+    // Prevent infinite loop for 500 errors
+    if (status === 500) {
+      const retryCount = errorRetryCount.get(url) || 0
+      const lastTime = lastErrorTime.get(url) || 0
+      
+      // If same error within 2 seconds, increment retry count
+      if (now - lastTime < 2000) {
+        if (retryCount >= 2) {
+          // Already retried multiple times, don't retry again
+          errorRetryCount.delete(url)
+          lastErrorTime.delete(url)
+          console.error('Server error (500) - preventing infinite loop:', url)
+          // Don't reject here, let the error propagate but prevent further retries
+          return Promise.reject(error)
+        }
+        errorRetryCount.set(url, retryCount + 1)
       } else {
-        window.location.href = '/login'
+        // Reset if error happened more than 2 seconds ago
+        errorRetryCount.set(url, 1)
+      }
+      lastErrorTime.set(url, now)
+    }
+    
+    if (status === 401) {
+      const authStore = useAuthStore()
+      
+      // Don't logout if we're currently loading user (e.g., on refresh)
+      // This prevents logout when user is being loaded from token
+      if (authStore.userLoading) {
+        return Promise.reject(error)
+      }
+      
+      // Only logout if user was previously authenticated and we got 401
+      // This means token is invalid or expired
+      if (authStore.isAuthenticated && authStore.user) {
+        authStore.logout()
+        // Use router.push with error handling to avoid timing issues
+        if (routerInstance) {
+          routerInstance.push('/login').catch(() => {
+            // Fallback to window.location if router push fails
+            window.location.href = '/login'
+          })
+        } else {
+          window.location.href = '/login'
+        }
       }
     }
+    
     return Promise.reject(error)
   }
 )
@@ -349,8 +415,8 @@ axios.interceptors.response.use(
 // Route guards
 router.beforeEach(async (to, from, next) => {
   try {
-    const authStore = useAuthStore()
-    
+  const authStore = useAuthStore()
+  
     // Validate route component exists
     if (to.matched.length === 0) {
       console.warn('Route not found:', to.path)
@@ -364,18 +430,36 @@ router.beforeEach(async (to, from, next) => {
     }
     
     // If route requires auth but user is not authenticated
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next('/login')
-      return
-    }
-    
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+      // If we have a token, try to load user first
+      if (authStore.token && !authStore.user) {
+        try {
+          await authStore.getUser()
+          // After loading user, check again
+          if (authStore.isAuthenticated && authStore.user) {
+            // User loaded successfully, continue navigation
+            next()
+            return
+          }
+        } catch (error) {
+          // Failed to load user, redirect to login
+          console.error('Failed to load user on auth check:', error)
+          next('/login')
+          return
+        }
+      }
+      // No token or failed to load user, redirect to login
+    next('/login')
+    return
+  }
+  
     // If user is authenticated but trying to access guest route
-    if (to.meta.guest && authStore.isAuthenticated) {
+  if (to.meta.guest && authStore.isAuthenticated) {
       // Redirect to role-specific dashboard
       if (authStore.user) {
         next(authStore.getDefaultRoute())
       } else {
-        next('/')
+    next('/')
       }
       return
     }
@@ -395,26 +479,49 @@ router.beforeEach(async (to, from, next) => {
           await authStore.getUser()
         } catch (error) {
           console.error('Failed to load user:', error)
-          next('/login')
+          // Only redirect to login if we're not already on a route that requires auth
+          // This prevents redirect during refresh
+          if (!to.path.startsWith('/login')) {
+            next('/login')
+          } else {
+            next()
+          }
           return
         }
       }
       
       // Check if user role matches required role
-      if (authStore.user?.role !== to.meta.role) {
-        // Redirect to role-specific dashboard instead of '/'
-        if (authStore.user) {
-          next(authStore.getDefaultRoute())
-        } else {
-          next('/login')
-        }
+      if (!authStore.user) {
+        // User not loaded, redirect to login
+        next('/login')
         return
       }
       
-      // Role matches, allow navigation to the requested path (stay on current path)
-    }
-    
-    next()
+      // IMPORTANT: Check role match FIRST - if it matches, always allow navigation
+      // This ensures refresh works correctly - user stays on current route
+      if (authStore.user.role === to.meta.role) {
+        // Role matches perfectly, allow navigation to the requested path
+        // This is the key fix - don't redirect if role matches!
+        next()
+    return
+  }
+  
+      // Role doesn't match - redirect to user's default route
+      // But only if we're not already on a route that starts with the default route
+      const defaultRoute = authStore.getDefaultRoute()
+      // Check if current path is already within the correct role's routes
+      if (to.path.startsWith(defaultRoute)) {
+        // Already on a route for this role (maybe child route), allow it
+        next()
+      } else {
+        // Wrong role, redirect to default route
+        next(defaultRoute)
+      }
+    return
+  }
+  
+    // No role requirement, allow navigation
+  next()
   } catch (error) {
     console.error('Router guard error:', error)
     const authStore = useAuthStore()
