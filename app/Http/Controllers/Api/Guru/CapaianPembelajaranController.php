@@ -73,6 +73,7 @@ class CapaianPembelajaranController extends Controller
         $request->validate([
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'kode_cp' => 'required|string|max:50',
+            'target' => 'required|string|in:tengah_semester,akhir_semester',
             'deskripsi' => 'required|string|max:200',
             'fase' => 'required|string|in:10,11,12',
             'semester' => 'nullable|string|in:1,2',
@@ -87,6 +88,7 @@ class CapaianPembelajaranController extends Controller
         $cp = CapaianPembelajaran::create([
             'mata_pelajaran_id' => $request->mata_pelajaran_id,
             'kode_cp' => $request->kode_cp,
+            'target' => $request->target,
             'deskripsi' => $request->deskripsi,
             'fase' => $request->fase,
             'semester' => $request->semester,
@@ -125,6 +127,7 @@ class CapaianPembelajaranController extends Controller
     {
         $request->validate([
             'kode_cp' => 'sometimes|required|string|max:50',
+            'target' => 'required|string|in:tengah_semester,akhir_semester',
             'deskripsi' => 'sometimes|required|string|max:200',
             'fase' => 'sometimes|required|string|in:10,11,12',
             'semester' => 'nullable|string|in:1,2',
@@ -135,6 +138,7 @@ class CapaianPembelajaranController extends Controller
 
         $updateData = $request->only([
             'kode_cp',
+            'target',
             'deskripsi',
             'fase',
             'semester',

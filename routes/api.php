@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('cek-penilaian/sts', [\App\Http\Controllers\Api\WaliKelas\CekPenilaianController::class, 'sts']);
         Route::get('cek-penilaian/sts/{mataPelajaran}', [\App\Http\Controllers\Api\WaliKelas\CekPenilaianController::class, 'stsDetail']);
         Route::get('cek-penilaian/sas', [\App\Http\Controllers\Api\WaliKelas\CekPenilaianController::class, 'sas']);
+        Route::get('cek-penilaian/sas/{mataPelajaran}', [\App\Http\Controllers\Api\WaliKelas\CekPenilaianController::class, 'sasDetail']);
         Route::get('cek-penilaian/p5', [\App\Http\Controllers\Api\WaliKelas\CekPenilaianController::class, 'p5']);
 
         // Rapor Management

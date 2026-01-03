@@ -322,6 +322,7 @@ class NilaiController extends Controller
             $cp = CapaianPembelajaran::create([
                 'mata_pelajaran_id' => $request->mata_pelajaran_id,
                 'kode_cp' => $request->kode_cp,
+                'target' => $request->kode_cp === 'STS' ? 'tengah_semester' : 'akhir_semester',
                 'deskripsi' => $request->kode_cp === 'STS' 
                     ? 'Nilai Sumatif Tengah Semester' 
                     : 'Nilai Sumatif Akhir Semester',

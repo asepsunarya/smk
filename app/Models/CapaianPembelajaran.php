@@ -19,6 +19,7 @@ class CapaianPembelajaran extends Model
     protected $fillable = [
         'mata_pelajaran_id',
         'kode_cp',
+        'target',
         'deskripsi',
         'fase',
         'semester',

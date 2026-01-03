@@ -18,6 +18,26 @@
         </div>
       </div>
 
+      <!-- Header with Add Button -->
+      <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <h3 class="text-lg font-medium text-gray-900">Capaian Pembelajaran</h3>
+              <p class="mt-1 text-sm text-gray-500">Kelola CP (Capaian Pembelajaran)</p>
+            </div>
+            <div class="mt-4 sm:mt-0 sm:ml-4">
+              <button 
+                @click="handleAddCP" 
+                class="btn btn-primary"
+              >
+                + Tambah CP
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- No Selection State -->
       <div v-if="!selectedMapel" class="bg-white shadow rounded-lg p-8 text-center">
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,38 +49,20 @@
 
       <!-- CP List -->
       <div v-else>
-        <!-- Header -->
+        <!-- Search -->
         <div class="bg-white shadow rounded-lg mb-6">
-          <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex-1">
-                <h3 class="text-lg font-medium text-gray-900">Capaian Pembelajaran</h3>
-                <p class="mt-1 text-sm text-gray-500">Kelola CP (Capaian Pembelajaran)</p>
-              </div>
-              <div class="mt-4 sm:mt-0 sm:ml-4">
-                <button 
-                  @click="handleAddCP" 
-                  class="btn btn-primary"
-                >
-                  + Tambah CP
-                </button>
-              </div>
-            </div>
-            
-            <!-- Search -->
-            <div class="mt-4">
-              <div class="relative">
-                <input
-                  v-model="searchTerm"
-                  type="text"
-                  placeholder="Cari CP..."
-                  class="form-input w-full"
-                />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                  </svg>
-                </div>
+          <div class="px-4 py-5 sm:px-6">
+            <div class="relative">
+              <input
+                v-model="searchTerm"
+                type="text"
+                placeholder="Cari CP..."
+                class="form-input w-full"
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
               </div>
             </div>
           </div>
@@ -100,6 +102,13 @@
                     </span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                       Semester {{ cp.semester || '1' }}
+                    </span>
+                    <span 
+                      v-if="cp.target"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      :class="cp.target === 'tengah_semester' ? 'bg-orange-100 text-orange-800' : 'bg-indigo-100 text-indigo-800'"
+                    >
+                      {{ cp.target === 'tengah_semester' ? 'STS' : 'SAS' }}
                     </span>
                     <span 
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -167,6 +176,7 @@
               <colgroup>
                 <col style="width: 15%;">
                 <col style="width: 15%;">
+                <col style="width: 15%;">
                 <col style="width: auto;">
                 <col style="width: 15%;">
               </colgroup>
@@ -177,6 +187,9 @@
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Semester
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Target
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Capaian Pembelajaran
@@ -208,6 +221,18 @@
                       option-value="value"
                       option-label="label"
                       :error="errors[`cp_${index}_semester`]"
+                    />
+                  </td>
+                  <td class="px-4 py-3">
+                    <FormField
+                      v-model="cp.target"
+                      type="select"
+                      placeholder="Pilih Target"
+                      :options="targetOptions"
+                      option-value="value"
+                      option-label="label"
+                      required
+                      :error="errors[`cp_${index}_target`]"
                     />
                   </td>
                   <td class="px-4 py-3">
@@ -332,6 +357,7 @@
               <colgroup>
                 <col style="width: 15%;">
                 <col style="width: 15%;">
+                <col style="width: 15%;">
                 <col style="width: auto;">
                 <col style="width: 15%;">
               </colgroup>
@@ -342,6 +368,9 @@
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Semester
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Target
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Capaian Pembelajaran
@@ -374,6 +403,18 @@
                       option-value="value"
                       option-label="label"
                       :error="errors.semester"
+                    />
+                  </td>
+                  <td class="px-4 py-3">
+                    <FormField
+                      v-model="cpForm.target"
+                      type="select"
+                      placeholder="Pilih Target"
+                      :options="targetOptions"
+                      option-value="value"
+                      option-label="label"
+                      required
+                      :error="errors.target"
                     />
                   </td>
                   <td class="px-4 py-3">
@@ -453,6 +494,7 @@ const cpForm = ref({
   fase: '',
   semester: '1', // Default to semester 1
   tingkat: '', // Will be set from fase
+  target: '', // tengah_semester, akhir_semester, or null (CP biasa)
   is_active: true
 })
 
@@ -504,6 +546,11 @@ const semesterOptions = [
   { value: '2', label: 'Semester 2' }
 ]
 
+const targetOptions = [
+  { value: 'tengah_semester', label: 'Tengah Semester (STS)' },
+  { value: 'akhir_semester', label: 'Akhir Semester (SAS)' }
+]
+
 // Methods
 const fetchAllMapel = async () => {
   try {
@@ -535,9 +582,9 @@ const loadCP = async () => {
 }
 
 const handleAddCP = () => {
-  // Show batch form modal (wireframe)
+  // Show batch form modal (wireframe) - pilih mapel dan jumlah CP
   batchForm.value = {
-    mata_pelajaran_id: '',
+    mata_pelajaran_id: selectedMapel.value || '', // Use selected mapel if available, otherwise empty
     jumlah_cp: ''
   }
   errors.value = {}
@@ -552,6 +599,7 @@ const editCP = (cp) => {
     fase: cp.fase,
     semester: cp.semester || '1', // Default to semester 1 if not set
     tingkat: cp.tingkat || cp.fase, // Use tingkat if available, otherwise use fase
+    target: cp.target || '', // Target: tengah_semester, akhir_semester, or empty (CP biasa)
     is_active: cp.is_active !== undefined ? cp.is_active : true
   }
   isEditing.value = true
@@ -573,8 +621,12 @@ const deleteCP = async (cp) => {
 const submitCPForm = async () => {
   errors.value = {}
   
+  // Get mata_pelajaran_id from form, batch form, or selected mapel
+  const mataPelajaranId = cpForm.value.mata_pelajaran_id || batchMataPelajaranId.value || selectedMapel.value
+  
   // Validate mata pelajaran is selected
-  if (!selectedMapel.value) {
+  if (!mataPelajaranId) {
+    errors.value.mata_pelajaran_id = 'Pilih mata pelajaran terlebih dahulu'
     toast.error('Pilih mata pelajaran terlebih dahulu')
     return
   }
@@ -593,13 +645,19 @@ const submitCPForm = async () => {
     return
   }
   
+  // Validate target
+  if (!cpForm.value.target) {
+    errors.value.target = 'Pilih target terlebih dahulu'
+    toast.error('Pilih target terlebih dahulu')
+    return
+  }
+  
   try {
     submitting.value = true
-    // Ensure mata_pelajaran_id is set from selectedMapel
     // Set tingkat from fase if not explicitly set
     const formData = {
       ...cpForm.value,
-      mata_pelajaran_id: selectedMapel.value,
+      mata_pelajaran_id: mataPelajaranId, // Use mata_pelajaran_id from validation above
       tingkat: cpForm.value.tingkat || cpForm.value.fase // Use tingkat if set, otherwise use fase
     }
     
@@ -614,7 +672,7 @@ const submitCPForm = async () => {
       // Get all existing CPs (including inactive) to find available kode_cp
       const existingCPs = await axios.get(`/guru/capaian-pembelajaran`, {
         params: {
-          mata_pelajaran_id: selectedMapel.value,
+          mata_pelajaran_id: mataPelajaranId,
           per_page: 1000 // Get all CPs
         }
       })
@@ -646,6 +704,10 @@ const submitCPForm = async () => {
       toast.success('CP berhasil ditambahkan')
     }
     closeCPForm()
+    // Update selectedMapel if it was changed
+    if (mataPelajaranId && mataPelajaranId !== selectedMapel.value) {
+      selectedMapel.value = mataPelajaranId
+    }
     await loadCP()
   } catch (error) {
     if (error.response?.data?.errors) {
@@ -668,6 +730,7 @@ const closeCPForm = () => {
     fase: '',
     semester: '1', // Default to semester 1
     tingkat: '', // Will be set from fase
+    target: '', // Target: tengah_semester, akhir_semester, or empty (CP biasa)
     is_active: true
   }
   errors.value = {}
@@ -711,6 +774,7 @@ const prosesBatchCP = async () => {
         kode_cp: `CP-${cpNumber}`,
         tingkat: '',
         semester: '1', // Default to semester 1
+        target: '', // Target: tengah_semester, akhir_semester, or empty (CP biasa)
         deskripsi: '',
         elemen: 'pemahaman', // Default elemen
         is_active: true // Default aktif
@@ -742,6 +806,10 @@ const simpanBatchCP = async () => {
       errors.value[`cp_${index}_semester`] = 'Pilih semester'
       hasError = true
     }
+    if (!cp.target) {
+      errors.value[`cp_${index}_target`] = 'Pilih target'
+      hasError = true
+    }
     if (!cp.deskripsi || cp.deskripsi.trim() === '') {
       errors.value[`cp_${index}_deskripsi`] = 'Masukkan capaian pembelajaran'
       hasError = true
@@ -766,6 +834,9 @@ const simpanBatchCP = async () => {
         kode_cp: cp.kode_cp,
         deskripsi: cp.deskripsi,
         fase: cp.tingkat, // tingkat = fase
+        semester: cp.semester,
+        tingkat: cp.tingkat,
+        target: cp.target || null, // Target: tengah_semester, akhir_semester, or null (CP biasa)
         elemen: cp.elemen,
         is_active: cp.is_active !== undefined ? cp.is_active : true
       })

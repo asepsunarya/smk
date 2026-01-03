@@ -580,11 +580,28 @@ const fetchCP = async () => {
       // 1. fase (tingkat) must match kelas tingkat
       // 2. is_active must be true
       // 3. Exclude STS and SAS from database (we add them manually)
+      // 4. Filter by target based on semester:
+      //    - Semester 1: target = 'tengah_semester' or NULL (CP biasa)
+      //    - Semester 2: target = 'akhir_semester' or NULL (CP biasa)
       const filteredCP = allCP.filter(cp => {
         // Filter by tingkat (fase) - must match kelas tingkat
         // Only include active CP
         // Also exclude STS and SAS if they exist in database
-        return cp.fase === tingkat && cp.is_active !== false && cp.kode_cp !== 'STS' && cp.kode_cp !== 'SAS'
+        if (cp.fase !== tingkat || cp.is_active === false || cp.kode_cp === 'STS' || cp.kode_cp === 'SAS') {
+          return false
+        }
+        
+        // Filter by target based on semester
+        if (selectedSemester.value === '1') {
+          // Semester 1: only show CP with target 'tengah_semester' or NULL
+          return cp.target === 'tengah_semester' || !cp.target
+        } else if (selectedSemester.value === '2') {
+          // Semester 2: only show CP with target 'akhir_semester' or NULL
+          return cp.target === 'akhir_semester' || !cp.target
+        }
+        
+        // If semester not selected, show all (shouldn't happen)
+        return true
       })
     
     // Map to options with label
