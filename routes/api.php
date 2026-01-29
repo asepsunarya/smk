@@ -24,6 +24,8 @@ use App\Http\Controllers\Api\WaliKelas\NilaiKelasController;
 use App\Http\Controllers\Api\WaliKelas\KehadiranController;
 use App\Http\Controllers\Api\WaliKelas\CatatanAkademikController;
 use App\Http\Controllers\Api\WaliKelas\RaporController as WaliRaporController;
+use App\Http\Controllers\Api\WaliKelas\CetakRaporBelajarController;
+use App\Http\Controllers\Api\WaliKelas\CetakProfilSiswaController;
 use App\Http\Controllers\Api\WaliKelas\NilaiPklController;
 use App\Http\Controllers\Api\KepalaSekolah\RaporApprovalController;
 use App\Http\Controllers\Api\KepalaSekolah\RekapController;
@@ -205,6 +207,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('rapor/{rapor}/submit', [WaliRaporController::class, 'submit']);
         Route::get('rapor/{rapor}/preview', [WaliRaporController::class, 'preview']);
         Route::get('rapor/{rapor}/download', [WaliRaporController::class, 'download']);
+
+        // Cetak Rapor Pembelajaran (Rapor Hasil Belajar - format Kurmer)
+        Route::get('cetak-rapor/kelas', [CetakRaporBelajarController::class, 'kelas']);
+        Route::get('cetak-rapor/belajar', [CetakRaporBelajarController::class, 'index']);
+        Route::get('cetak-rapor/belajar/{siswa}/download', [CetakRaporBelajarController::class, 'download']);
+        Route::get('cetak-rapor/belajar/{siswa}/transkrip', [CetakRaporBelajarController::class, 'transkrip']);
+
+        // Cetak Profil Siswa (Biodata Rapor)
+        Route::get('cetak-rapor/profil-siswa', [CetakProfilSiswaController::class, 'index']);
+        Route::get('cetak-rapor/profil-siswa/{siswa}/download', [CetakProfilSiswaController::class, 'download']);
     });
 
     // Kepala Sekolah routes

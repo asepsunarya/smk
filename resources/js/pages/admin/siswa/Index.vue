@@ -166,6 +166,20 @@
               :error="errors.agama"
             />
             <FormField
+              v-model="form.anak_ke"
+              type="text"
+              label="Anak ke"
+              placeholder="Contoh: 1, 2, 3"
+              :error="errors.anak_ke"
+            />
+            <FormField
+              v-model="form.tanggal_masuk"
+              type="date"
+              label="Tahun Masuk"
+              placeholder="Pilih tanggal masuk"
+              :error="errors.tanggal_masuk"
+            />
+            <FormField
               v-model="form.kelas_id"
               type="select"
               label="Kelas"
@@ -175,6 +189,13 @@
               option-label="nama_kelas"
               required
               :error="errors.kelas_id"
+            />
+            <FormField
+              v-model="form.sekolah_asal"
+              type="text"
+              label="Sekolah Asal"
+              placeholder="Contoh: SMP Negeri 1 Cianjur"
+              :error="errors.sekolah_asal"
             />
           </div>
           
@@ -337,6 +358,9 @@ const form = reactive({
   tempat_lahir: '',
   tanggal_lahir: '',
   agama: '',
+  anak_ke: '',
+  tanggal_masuk: '',
+  sekolah_asal: '',
   alamat: '',
   no_hp: '',
   nama_ayah: '',

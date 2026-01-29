@@ -67,6 +67,8 @@ class SiswaController extends Controller
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
             'agama' => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
+            'anak_ke' => ['nullable', 'string', 'max:10'],
+            'sekolah_asal' => ['nullable', 'string', 'max:255'],
             'alamat' => ['required', 'string'],
             'no_hp' => ['nullable', 'string'],
             'nama_ayah' => ['nullable', 'string'],
@@ -81,7 +83,7 @@ class SiswaController extends Controller
         DB::beginTransaction();
         try {
             $siswa = Siswa::create([
-                'user_id' => null, // No user linked yet
+                'user_id' => null,
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
                 'nama_lengkap' => $request->nama_lengkap,
@@ -89,6 +91,8 @@ class SiswaController extends Controller
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'agama' => $request->agama,
+                'anak_ke' => $request->anak_ke,
+                'sekolah_asal' => $request->sekolah_asal,
                 'alamat' => $request->alamat,
                 'no_hp' => $request->no_hp,
                 'nama_ayah' => $request->nama_ayah,
@@ -154,6 +158,8 @@ class SiswaController extends Controller
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
             'agama' => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
+            'anak_ke' => ['nullable', 'string', 'max:10'],
+            'sekolah_asal' => ['nullable', 'string', 'max:255'],
             'alamat' => ['required', 'string'],
             'no_hp' => ['nullable', 'string'],
             'nama_ayah' => ['nullable', 'string'],

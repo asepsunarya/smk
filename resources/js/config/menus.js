@@ -80,7 +80,7 @@ export const menuConfig = {
       icon: 'printer',
       routes: ['/wali-kelas/cetak-rapor'],
       items: [
-        { label: 'Rapor Belajar', to: '/wali-kelas/cetak-rapor/belajar', icon: 'document-text' },
+        { label: 'Rapor Hasil Belajar', to: '/wali-kelas/cetak-rapor/belajar', icon: 'document-text' },
         { label: 'Rapor P5', to: '/wali-kelas/cetak-rapor/p5', icon: 'document-report' },
         { label: 'Nilai UKK', to: '/wali-kelas/cetak-rapor/p5', icon: 'document-report' },
         { label: 'Legger', to: '/wali-kelas/cetak-rapor/legger', icon: 'table' },
