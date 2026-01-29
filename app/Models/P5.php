@@ -18,9 +18,18 @@ class P5 extends Model
 
     protected $fillable = [
         'tema',
+        'judul',
         'deskripsi',
+        'dimensi',
+        'elemen',
+        'sub_elemen',
+        'elemen_sub',
         'koordinator_id',
         'tahun_ajaran_id',
+    ];
+
+    protected $casts = [
+        'elemen_sub' => 'array',
     ];
 
     /**
@@ -48,12 +57,30 @@ class P5 extends Model
     }
 
     /**
-     * Get siswa who participated in this P5.
+     * Get siswa who participated in this P5 (via nilai_p5).
      */
     public function siswa()
     {
         return $this->belongsToMany(Siswa::class, 'nilai_p5')
                     ->distinct();
+    }
+
+    /**
+     * Get peserta (siswa) assigned to this P5 (via p5_siswa).
+     */
+    public function peserta()
+    {
+        return $this->belongsToMany(Siswa::class, 'p5_siswa')
+                    ->withPivot('catatan_proses')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get kelompok (groups with fasilitator and siswa).
+     */
+    public function kelompok()
+    {
+        return $this->hasMany(P5Kelompok::class);
     }
 
     /**

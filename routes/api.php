@@ -101,6 +101,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('pkl', PklController::class);
         Route::apiResource('ukk', UkkController::class);
         Route::get('ukk/jurusan/{jurusan}', [UkkController::class, 'byJurusan']);
+        Route::get('p5/available-guru', [AdminP5Controller::class, 'availableGuru']);
+        Route::get('p5/available-siswa', [AdminP5Controller::class, 'availableSiswa']);
+        Route::get('p5/{p5}/kelompok', [AdminP5Controller::class, 'getKelompok']);
+        Route::post('p5/{p5}/kelompok', [AdminP5Controller::class, 'saveKelompok']);
+        Route::get('p5/{p5}/available-fasilitator-kelompok', [AdminP5Controller::class, 'availableFasilitatorForKelompok']);
+        Route::get('p5/{p5}/available-siswa-kelompok', [AdminP5Controller::class, 'availableSiswaForKelompok']);
         Route::apiResource('p5', AdminP5Controller::class);
 
         // Cetak Rapor

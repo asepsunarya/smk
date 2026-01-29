@@ -27,6 +27,8 @@ class Kelas extends Model
         'kapasitas' => 'integer',
     ];
 
+    protected $appends = ['wali_kelas_id'];
+
     /**
      * Get the jurusan that owns the kelas.
      */
@@ -123,5 +125,17 @@ class Kelas extends Model
     public function getFullNameAttribute()
     {
         return "{$this->nama_kelas} - {$this->jurusan->nama_jurusan}";
+    }
+
+    /**
+     * Wali kelas (user id) dari wali aktif di tabel wali_kelas.
+     * Kolom wali_kelas_id sudah dihapus dari tabel kelas.
+     *
+     * @return int|null
+     */
+    public function getWaliKelasIdAttribute()
+    {
+        $aktif = $this->relationLoaded('waliKelasAktif') ? $this->waliKelasAktif : $this->waliKelasAktif()->with('guru.user')->first();
+        return $aktif && $aktif->guru && $aktif->guru->user ? $aktif->guru->user->id : null;
     }
 }

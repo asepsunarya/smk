@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\P5;
 use App\Models\NilaiP5;
-use App\Models\DimensiP5;
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,14 +28,17 @@ class P5Controller extends Controller
         $user = Auth::user();
         $guru = $user->guru;
 
-        $query = P5::with(['koordinator.user', 'tahunAjaran']);
+        $query = P5::with(['koordinator.user', 'tahunAjaran', 'peserta.kelas', 'kelompok.guru', 'kelompok.siswa.kelas']);
 
-        // If guru is koordinator, show only their projects
+        // Show P5 where guru is koordinator OR fasilitator di salah satu kelompok
         if ($guru) {
-            $query->where('koordinator_id', $guru->id);
+            $query->where(function ($q) use ($guru) {
+                $q->where('koordinator_id', $guru->id)
+                    ->orWhereHas('kelompok', fn ($k) => $k->where('guru_id', $guru->id));
+            });
         }
 
-        if ($request->has('tahun_ajaran_id')) {
+        if ($request->has('tahun_ajaran_id') && $request->tahun_ajaran_id) {
             $query->where('tahun_ajaran_id', $request->tahun_ajaran_id);
         }
 
@@ -163,16 +165,20 @@ class P5Controller extends Controller
         $request->validate([
             'nilai' => 'required|array',
             'nilai.*.siswa_id' => 'required|exists:siswa,id',
-            'nilai.*.dimensi_id' => 'required|exists:dimensi_p5,id',
+            'nilai.*.sub_elemen' => 'required|string|max:500',
             'nilai.*.nilai' => 'required|string|in:MB,SB,BSH,SAB',
-            'nilai.*.catatan' => 'nullable|string|max:500',
+            'catatan_proses' => 'nullable|array',
+            'catatan_proses.*.siswa_id' => 'required|exists:siswa,id',
+            'catatan_proses.*.catatan_proses' => 'nullable|string|max:5000',
         ]);
 
         $user = Auth::user();
         $guru = $user->guru;
 
-        // Verify that this P5 belongs to the current guru
-        if ($p5->koordinator_id !== $guru->id) {
+        // Verify: guru harus koordinator P5 atau fasilitator di salah satu kelompok
+        $isKoordinator = $p5->koordinator_id == $guru->id;
+        $isFasilitator = $p5->kelompok()->where('guru_id', $guru->id)->exists();
+        if (!$isKoordinator && !$isFasilitator) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk menginput nilai projek ini',
             ], 403);
@@ -185,13 +191,22 @@ class P5Controller extends Controller
                     [
                         'siswa_id' => $nilaiData['siswa_id'],
                         'p5_id' => $p5->id,
-                        'dimensi_id' => $nilaiData['dimensi_id'],
+                        'sub_elemen' => $nilaiData['sub_elemen'],
                     ],
                     [
                         'nilai' => $nilaiData['nilai'],
-                        'catatan' => $nilaiData['catatan'] ?? null,
+                        'dimensi_id' => null,
                     ]
                 );
+            }
+
+            if ($request->has('catatan_proses') && is_array($request->catatan_proses)) {
+                foreach ($request->catatan_proses as $item) {
+                    DB::table('p5_siswa')
+                        ->where('p5_id', $p5->id)
+                        ->where('siswa_id', $item['siswa_id'])
+                        ->update(['catatan_proses' => $item['catatan_proses'] ?? null]);
+                }
             }
 
             DB::commit();
@@ -216,17 +231,42 @@ class P5Controller extends Controller
      */
     public function getNilai(P5 $p5)
     {
-        $nilai = $p5->nilaiP5()
-                    ->with(['siswa.user', 'dimensi'])
-                    ->get()
-                    ->groupBy('siswa_id');
+        $p5->load(['koordinator.user', 'tahunAjaran', 'peserta.kelas']);
+        $elemenSub = $p5->elemen_sub ?? [];
+        if (!is_array($elemenSub) || count($elemenSub) === 0) {
+            return response()->json([
+                'p5' => $p5,
+                'elemen_sub' => [],
+                'nilai' => [],
+            ]);
+        }
 
-        $dimensi = DimensiP5::all();
+        $subElemenList = array_map(fn ($es) => $es['sub_elemen'] ?? $es['sub_elemen'] ?? '', $elemenSub);
+        $subElemenList = array_values(array_unique(array_filter($subElemenList)));
+
+        $nilaiRows = $p5->nilaiP5()
+            ->whereNotNull('sub_elemen')
+            ->whereIn('sub_elemen', $subElemenList)
+            ->get();
+
+        $nilai = [];
+        foreach ($nilaiRows as $row) {
+            if (!isset($nilai[$row->siswa_id])) {
+                $nilai[$row->siswa_id] = [];
+            }
+            $nilai[$row->siswa_id][$row->sub_elemen] = $row->nilai;
+        }
+
+        $catatanProses = \Illuminate\Support\Facades\DB::table('p5_siswa')
+            ->where('p5_id', $p5->id)
+            ->pluck('catatan_proses', 'siswa_id')
+            ->toArray();
 
         return response()->json([
-            'p5' => $p5->load(['koordinator.user', 'tahunAjaran']),
-            'dimensi' => $dimensi,
+            'p5' => $p5,
+            'elemen_sub' => $elemenSub,
             'nilai' => $nilai,
+            'catatan_proses' => $catatanProses,
         ]);
     }
 }

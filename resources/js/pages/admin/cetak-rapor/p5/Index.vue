@@ -206,45 +206,42 @@
             <h3 class="text-lg font-semibold mb-3">Projek P5</h3>
             <div v-for="project in previewData.p5_projects" :key="project.id" class="mb-6 border rounded-lg p-4">
               <div class="mb-3">
-                <h4 class="text-md font-semibold text-gray-900">{{ project.tema }}</h4>
+                <h4 class="text-md font-semibold text-gray-900">{{ project.judul || project.tema }}</h4>
                 <p v-if="project.deskripsi" class="text-sm text-gray-600 mt-1">{{ project.deskripsi }}</p>
                 <div class="text-xs text-gray-500 mt-2">
-                  <span v-if="project.tahun_ajaran">Tahun Ajaran: {{ project.tahun_ajaran.label }}</span>
-                  <span v-if="project.koordinator" class="ml-4">
-                    Koordinator: {{ project.koordinator.nama }}
-                  </span>
+                  <span v-if="project.dimensi">Dimensi: {{ project.dimensi }}</span>
+                  <span v-if="project.tahun_ajaran" class="ml-4">Tahun Ajaran: {{ project.tahun_ajaran.label }}</span>
+                  <span v-if="project.koordinator?.nama" class="ml-4">Koordinator: {{ project.koordinator.nama }}</span>
                 </div>
               </div>
 
-              <!-- Dimensi Scores -->
-              <div class="mt-4">
-                <h5 class="text-sm font-medium text-gray-700 mb-2">Nilai Dimensi:</h5>
+              <!-- Elemen & Sub Elemen dengan Predikat -->
+              <div v-if="project.elemen_sub && project.elemen_sub.length > 0" class="mt-4">
+                <h5 class="text-sm font-medium text-gray-700 mb-2">Predikat per Sub Elemen:</h5>
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Dimensi</th>
-                      <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Nilai</th>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
+                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
+                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Elemen</th>
+                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sub Elemen</th>
+                      <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Predikat</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="dimensi in project.dimensi" :key="dimensi.id">
-                      <td class="px-3 py-2 text-sm text-gray-900">{{ dimensi.nama_dimensi }}</td>
+                    <tr v-for="(es, idx) in project.elemen_sub" :key="idx">
+                      <td class="px-3 py-2 text-sm text-gray-900">{{ idx + 1 }}</td>
+                      <td class="px-3 py-2 text-sm text-gray-900">{{ es.elemen }}</td>
+                      <td class="px-3 py-2 text-sm text-gray-900">{{ es.sub_elemen }}</td>
                       <td class="px-3 py-2 text-center">
-                        <span :class="getNilaiBadgeClass(dimensi.nilai)" class="px-2 py-1 rounded text-xs font-medium">
-                          {{ dimensi.nilai }}
-                        </span>
-                      </td>
-                      <td class="px-3 py-2 text-sm text-gray-600">
-                        {{ dimensi.nilai_description }}
-                        <span v-if="dimensi.catatan" class="block text-xs text-gray-500 mt-1">
-                          {{ dimensi.catatan }}
+                        <span :class="getNilaiBadgeClass(es.predikat)" class="px-2 py-1 rounded text-xs font-medium">
+                          {{ es.predikat_label || es.predikat || '-' }}
                         </span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+              <p v-else class="text-sm text-gray-500 mt-2">Belum ada nilai sub elemen.</p>
             </div>
           </div>
           <div v-else class="text-center py-8 text-gray-500">
@@ -409,24 +406,20 @@ const downloadRapor = async (siswa) => {
     if (filters.tahun_ajaran_id) {
       params.append('tahun_ajaran_id', filters.tahun_ajaran_id)
     }
-    
     const response = await axios.get(`/admin/cetak-rapor/p5/${siswa.id}/download?${params.toString()}`, {
       responseType: 'blob'
     })
-    
-    // For now, show message since PDF generation is not implemented
-    toast.info('Fitur download PDF akan segera tersedia')
-    
-    // Future implementation:
-    // const url = window.URL.createObjectURL(new Blob([response.data]))
-    // const link = document.createElement('a')
-    // link.href = url
-    // link.setAttribute('download', `rapor-p5-${siswa.nis}.pdf`)
-    // document.body.appendChild(link)
-    // link.click()
-    // link.remove()
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `rapor-p5-${siswa.nis}-${(siswa.nama_lengkap || 'siswa').replace(/\s+/g, '-')}.pdf`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    toast.success('Rapor P5 berhasil diunduh')
   } catch (error) {
-    toast.error('Gagal mengunduh rapor P5')
+    toast.error(error.response?.data?.message || 'Gagal mengunduh rapor P5')
     console.error(error)
   }
 }

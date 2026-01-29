@@ -431,12 +431,17 @@ const submitForm = async () => {
 
     const url = isEditing.value ? `/admin/kelas/${selectedKelas.value.id}` : '/admin/kelas'
     const method = isEditing.value ? 'put' : 'post'
-    
-    const payload = { ...form }
-    if (!payload.wali_kelas_id) {
-      payload.wali_kelas_id = null
+
+    const payload = {
+      nama_kelas: form.nama_kelas,
+      tingkat: form.tingkat,
+      jurusan_id: form.jurusan_id,
+      kapasitas: form.kapasitas
     }
-    
+    if (!isEditing.value) {
+      payload.wali_kelas_id = form.wali_kelas_id || null
+    }
+
     await axios[method](url, payload)
     
     toast.success(`Kelas berhasil ${isEditing.value ? 'diperbarui' : 'ditambahkan'}`)

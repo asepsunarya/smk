@@ -20,6 +20,7 @@ class NilaiP5 extends Model
         'siswa_id',
         'p5_id',
         'dimensi_id',
+        'sub_elemen',
         'nilai',
         'catatan',
     ];

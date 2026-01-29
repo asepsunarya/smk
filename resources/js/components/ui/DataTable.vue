@@ -64,8 +64,8 @@
                   </svg>
                 </div>
               </th>
-              <th v-if="hasActions" class="relative px-6 py-3">
-                <span class="sr-only">Aksi</span>
+              <th v-if="hasActions" class="relative px-6 py-3 text-center w-32">
+                Aksi
               </th>
             </tr>
           </thead>
@@ -77,7 +77,7 @@
                   {{ formatValue(getNestedValue(item, column.key), column) }}
                 </slot>
               </td>
-              <td v-if="hasActions" class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+              <td v-if="hasActions" class="relative whitespace-nowrap py-4 px-6 text-center text-sm font-medium w-32">
                 <slot name="row-actions" :item="item" :index="index"></slot>
               </td>
             </tr>

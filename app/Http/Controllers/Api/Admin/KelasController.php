@@ -26,7 +26,7 @@ class KelasController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Kelas::with(['jurusan', 'waliKelas', 'siswa']);
+        $query = Kelas::with(['jurusan', 'waliKelas', 'waliKelasAktif.guru.user', 'siswa']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -36,7 +36,7 @@ class KelasController extends Controller
                       $qu->where('nama_jurusan', 'like', "%{$search}%")
                         ->orWhere('kode_jurusan', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('waliKelas', function ($qu) use ($search) {
+                  ->orWhereHas('waliKelasAktif.guru.user', function ($qu) use ($search) {
                       $qu->where('name', 'like', "%{$search}%");
                   });
             });
@@ -50,8 +50,10 @@ class KelasController extends Controller
             $query->where('tingkat', $request->tingkat);
         }
 
-        if ($request->has('wali_kelas_id')) {
-            $query->where('wali_kelas_id', $request->wali_kelas_id);
+        if ($request->has('wali_kelas_id') && $request->wali_kelas_id) {
+            $query->whereHas('waliKelasAktif.guru', function ($q) use ($request) {
+                $q->where('user_id', $request->wali_kelas_id);
+            });
         }
 
         $kelas = $query->orderBy('tingkat')
@@ -77,6 +79,8 @@ class KelasController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge(['wali_kelas_id' => $request->filled('wali_kelas_id') ? $request->wali_kelas_id : null]);
+
         $request->validate([
             'nama_kelas' => ['required', 'string', 'max:255'],
             'tingkat' => ['required', 'in:10,11,12'],
@@ -101,15 +105,17 @@ class KelasController extends Controller
                 'nama_kelas' => $request->nama_kelas,
                 'tingkat' => $request->tingkat,
                 'jurusan_id' => $request->jurusan_id,
-                'wali_kelas_id' => $request->wali_kelas_id,
                 'kapasitas' => $request->kapasitas,
             ]);
 
+            $this->syncWaliKelasForKelas($kelas, $request->wali_kelas_id);
+
             DB::commit();
 
+            $kelas->load(['jurusan', 'waliKelasAktif.guru.user']);
             return response()->json([
                 'message' => 'Kelas berhasil ditambahkan',
-                'data' => $kelas->load(['jurusan', 'waliKelas']),
+                'data' => $kelas,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -123,52 +129,54 @@ class KelasController extends Controller
     /**
      * Display the specified kelas.
      *
-     * @param  Kelas  $kelas
+     * @param  Kelas  $kela  (route param {kela} from apiResource)
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Kelas $kelas)
+    public function show(Kelas $kela)
     {
-        $kelas->load([
+        $kela->load([
             'jurusan',
             'waliKelasAktif.guru.user',
             'siswa.user',
         ]);
 
         // Add computed attributes
-        $kelas->active_siswa_count = $kelas->activeSiswa()->count();
-        $kelas->is_full = $kelas->is_full;
-        $kelas->available_capacity = $kelas->available_capacity;
+        $kela->active_siswa_count = $kela->activeSiswa()->count();
+        $kela->is_full = $kela->is_full;
+        $kela->available_capacity = $kela->available_capacity;
 
-        return response()->json($kelas);
+        return response()->json($kela);
     }
 
     /**
      * Update the specified kelas.
      *
      * @param  Request  $request
-     * @param  Kelas  $kelas
+     * @param  Kelas  $kela  (route param {kela} from apiResource)
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Kelas $kelas)
+    public function update(Request $request, Kelas $kela)
     {
+        $kelas = $kela;
+
         $request->validate([
             'nama_kelas' => ['required', 'string', 'max:255'],
             'tingkat' => ['required', 'in:10,11,12'],
             'jurusan_id' => ['required', 'exists:jurusan,id'],
-            'wali_kelas_id' => ['nullable', 'exists:users,id'],
             'kapasitas' => ['required', 'integer', 'min:1', 'max:50'],
+            'wali_kelas_id' => ['nullable', 'exists:users,id'],
         ]);
 
         // Validate kapasitas - cannot be less than current active students
         $currentActiveSiswa = $kelas->activeSiswa()->count();
-        if ($request->kapasitas < $currentActiveSiswa) {
+        if ((int) $request->kapasitas < $currentActiveSiswa) {
             return response()->json([
                 'message' => "Kapasitas tidak boleh kurang dari jumlah siswa aktif ({$currentActiveSiswa} siswa)",
             ], 422);
         }
 
-        // Validate wali_kelas role if provided
-        if ($request->wali_kelas_id) {
+        // Validasi role wali hanya jika wali_kelas_id dikirim (opsional)
+        if ($request->has('wali_kelas_id') && $request->wali_kelas_id) {
             $waliKelas = User::find($request->wali_kelas_id);
             if (!$waliKelas || !in_array($waliKelas->role, ['wali_kelas', 'guru', 'kepala_sekolah'])) {
                 return response()->json([
@@ -179,19 +187,25 @@ class KelasController extends Controller
 
         DB::beginTransaction();
         try {
-            $kelas->update([
-                'nama_kelas' => $request->nama_kelas,
-                'tingkat' => $request->tingkat,
-                'jurusan_id' => $request->jurusan_id,
-                'wali_kelas_id' => $request->wali_kelas_id,
-                'kapasitas' => $request->kapasitas,
-            ]);
+            $kelas->nama_kelas = $request->nama_kelas;
+            $kelas->tingkat = $request->tingkat;
+            $kelas->jurusan_id = $request->jurusan_id;
+            $kelas->kapasitas = $request->kapasitas;
+            $kelas->save();
+
+            // Sinkron wali kelas hanya jika request mengirim wali_kelas_id (opsional)
+            if ($request->has('wali_kelas_id')) {
+                $this->syncWaliKelasForKelas($kelas, $request->wali_kelas_id ?: null);
+            }
 
             DB::commit();
 
+            $kelas->unsetRelation('jurusan')->unsetRelation('waliKelasAktif');
+            $kelas->load(['jurusan', 'waliKelasAktif.guru.user']);
+
             return response()->json([
                 'message' => 'Kelas berhasil diperbarui',
-                'data' => $kelas->fresh()->load(['jurusan', 'waliKelas']),
+                'data' => $kelas,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -203,13 +217,40 @@ class KelasController extends Controller
     }
 
     /**
+     * Sync wali kelas for a kelas: set or clear active wali via wali_kelas table.
+     * $waliKelasUserId = user id (nullable).
+     */
+    protected function syncWaliKelasForKelas(Kelas $kelas, $waliKelasUserId): void
+    {
+        WaliKelas::where('kelas_id', $kelas->id)->where('is_active', true)->update(['is_active' => false]);
+
+        if (!$waliKelasUserId) {
+            return;
+        }
+
+        $guru = \App\Models\Guru::where('user_id', $waliKelasUserId)->with('user')->first();
+        if (!$guru || !$guru->user || !in_array($guru->user->role, ['wali_kelas', 'guru', 'kepala_sekolah'])) {
+            return;
+        }
+
+        WaliKelas::create([
+            'guru_id' => $guru->id,
+            'kelas_id' => $kelas->id,
+            'is_active' => true,
+            'tanggal_mulai' => now(),
+        ]);
+    }
+
+    /**
      * Remove the specified kelas.
      *
-     * @param  Kelas  $kelas
+     * @param  Kelas  $kela  (route param {kela} from apiResource)
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Kelas $kelas)
+    public function destroy(Kelas $kela)
     {
+        $kelas = $kela;
+
         // Prevent deleting kelas if it has students
         if ($kelas->siswa()->exists()) {
             return response()->json([
@@ -279,9 +320,10 @@ class KelasController extends Controller
 
             DB::commit();
 
+            $kelas->load('waliKelasAktif.guru.user');
             return response()->json([
                 'message' => 'Wali kelas berhasil ditetapkan',
-                'data' => $kelas->fresh()->load('waliKelasAktif.guru.user'),
+                'data' => $kelas,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

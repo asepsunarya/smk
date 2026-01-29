@@ -21,22 +21,6 @@
           </button>
         </template>
 
-        <template #filters>
-          <!-- <FormField
-            v-model="filters.status"
-            type="select"
-            placeholder="Status"
-            :options="statusOptions"
-            @update:model-value="fetchGuru"
-          /> -->
-          <FormField
-            v-model="filters.bidang_studi"
-            type="text"
-            placeholder="Bidang Studi"
-            @update:model-value="fetchGuru"
-          />
-        </template>
-
         <template #cell-nama_lengkap="{ item }">
           <div class="flex items-center">
             <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
@@ -336,8 +320,7 @@ const resetPasswordErrors = ref({})
 // Filters
 const filters = reactive({
   search: '',
-  status: '',
-  bidang_studi: ''
+  status: ''
 })
 
 // Table columns
@@ -371,7 +354,6 @@ const fetchGuru = async () => {
     const params = new URLSearchParams()
     if (filters.search) params.append('search', filters.search)
     if (filters.status) params.append('status', filters.status)
-    if (filters.bidang_studi) params.append('bidang_studi', filters.bidang_studi)
     params.append('per_page', 100)
     
     const response = await axios.get(`/admin/guru?${params}`)

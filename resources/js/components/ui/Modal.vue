@@ -37,7 +37,7 @@
           >
             <div
               v-if="show"
-              class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full"
+              class="relative transform overflow-visible rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full"
               :class="[sizeClasses, props.size === 'full' ? 'flex flex-col' : '']"
             >
               <!-- Header -->
@@ -69,7 +69,7 @@
                     <h3 v-if="title" class="text-lg font-medium leading-6 text-gray-900 flex-shrink-0">
                       {{ title }}
                     </h3>
-                    <div class="mt-2 flex-1 min-h-0" :class="props.size === 'full' ? 'overflow-y-auto' : ''">
+                    <div class="mt-2 flex-1 min-h-0 overflow-visible" :class="props.size === 'full' ? 'overflow-y-auto' : ''">
                       <slot></slot>
                     </div>
                   </div>

@@ -29,13 +29,6 @@
             option-label="nama_kelas"
             @update:model-value="fetchSiswa"
           />
-          <FormField
-            v-model="filters.status"
-            type="select"
-            placeholder="Status"
-            :options="statusOptions"
-            @update:model-value="fetchSiswa"
-          />
         </template>
 
         <template #cell-nama_lengkap="{ item }">
@@ -55,12 +48,6 @@
             {{ item.kelas.nama_kelas }}
           </span>
           <span v-else class="text-gray-400">-</span>
-        </template>
-
-        <template #cell-status="{ item }">
-          <span :class="getStatusBadge(item.status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-            {{ item.status }}
-          </span>
         </template>
 
         <template #row-actions="{ item }">
@@ -246,15 +233,6 @@
               placeholder="Masukkan nomor HP orang tua"
               :error="errors.no_hp_ortu"
             />
-            <FormField
-              v-model="form.status"
-              type="select"
-              label="Status"
-              placeholder="Pilih status"
-              :options="statusOptions"
-              required
-              :error="errors.status"
-            />
           </div>
         </form>
 
@@ -368,8 +346,7 @@ const form = reactive({
   pekerjaan_ayah: '',
   pekerjaan_ibu: '',
   no_hp_ortu: '',
-  kelas_id: '',
-  status: 'aktif'
+  kelas_id: ''
 })
 
 const moveClassForm = reactive({
@@ -381,8 +358,7 @@ const moveClassErrors = ref({})
 
 // Filters
 const filters = reactive({
-  kelas_id: '',
-  status: ''
+  kelas_id: ''
 })
 
 // Table columns
@@ -391,20 +367,12 @@ const columns = [
   { key: 'jenis_kelamin', label: 'L/P', sortable: true },
   { key: 'kelas', label: 'Kelas' },
   { key: 'tempat_lahir', label: 'Tempat Lahir', sortable: true },
-  { key: 'tanggal_lahir', label: 'Tanggal Lahir', type: 'date', sortable: true },
-  { key: 'status', label: 'Status', sortable: true }
+  { key: 'tanggal_lahir', label: 'Tanggal Lahir', type: 'date', sortable: true }
 ]
 
 // Options
 const agamaOptions = [
   'Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'
-]
-
-const statusOptions = [
-  { value: 'aktif', label: 'Aktif' },
-  { value: 'lulus', label: 'Lulus' },
-  { value: 'pindah', label: 'Pindah' },
-  { value: 'keluar', label: 'Keluar' }
 ]
 
 // Methods
@@ -413,8 +381,7 @@ const fetchSiswa = async () => {
     loading.value = true
     const params = new URLSearchParams()
     if (filters.kelas_id) params.append('kelas_id', filters.kelas_id)
-    if (filters.status) params.append('status', filters.status)
-    
+
     const response = await axios.get(`/admin/siswa?${params}`)
     siswa.value = response.data.data
   } catch (error) {
@@ -453,9 +420,7 @@ const fetchKelas = async () => {
 }
 
 const resetForm = () => {
-  Object.keys(form).forEach(key => {
-    form[key] = key === 'status' ? 'aktif' : ''
-  })
+  Object.keys(form).forEach(key => { form[key] = '' })
   errors.value = {}
   isEditing.value = false
   selectedSiswa.value = null
@@ -500,8 +465,12 @@ const submitForm = async () => {
 
     const url = isEditing.value ? `/admin/siswa/${selectedSiswa.value.id}` : '/admin/siswa'
     const method = isEditing.value ? 'put' : 'post'
-    
-    await axios[method](url, form)
+    const payload = {
+      ...form,
+      status: isEditing.value ? (selectedSiswa.value?.status || 'aktif') : 'aktif'
+    }
+
+    await axios[method](url, payload)
     
     toast.success(`Siswa berhasil ${isEditing.value ? 'diperbarui' : 'ditambahkan'}`)
     closeForm()
@@ -579,16 +548,6 @@ const submitMoveClass = async () => {
   } finally {
     movingClass.value = false
   }
-}
-
-const getStatusBadge = (status) => {
-  const badges = {
-    aktif: 'bg-green-100 text-green-800',
-    lulus: 'bg-blue-100 text-blue-800',
-    pindah: 'bg-yellow-100 text-yellow-800',
-    keluar: 'bg-red-100 text-red-800'
-  }
-  return badges[status] || 'bg-gray-100 text-gray-800'
 }
 
 const handleNisInput = (event) => {
