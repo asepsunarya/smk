@@ -38,6 +38,15 @@ class Guru extends Model
     ];
 
     /**
+     * Get nuptk; tampilkan "-" ketika null atau kosong.
+     */
+    public function getNuptkAttribute($value)
+    {
+        $v = $value ?? '';
+        return ($v === '' || trim($v) === '') ? '-' : $v;
+    }
+
+    /**
      * Get the user account.
      */
     public function user()

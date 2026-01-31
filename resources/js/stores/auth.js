@@ -22,7 +22,8 @@ export const useAuthStore = defineStore('auth', {
       return n > 0
     },
     isKepalaSekolah: (state) => state.user?.role === 'kepala_sekolah',
-    isSiswa: (state) => state.user?.role === 'siswa'
+    isSiswa: (state) => state.user?.role === 'siswa',
+    isKepalaJurusan: (state) => !!(state.profile?.is_kepala_jurusan ?? state.profile?.isKepalaJurusan)
   },
 
   actions: {

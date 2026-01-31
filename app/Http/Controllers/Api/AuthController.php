@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Jurusan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -51,6 +52,7 @@ class AuthController extends Controller
             $profileData = $user->siswa->load('kelas.jurusan');
         } elseif (in_array($user->role, ['guru', 'kepala_sekolah']) && $user->guru) {
             $profileData = $user->guru;
+            $profileData->setAttribute('is_kepala_jurusan', Jurusan::where('kepala_jurusan_id', $user->guru->id)->exists());
             if ($user->role === 'guru' && $user->isWaliKelas()) {
                 $profileData->load([
                     'waliKelasAktif.kelas' => function ($query) {
@@ -132,6 +134,7 @@ class AuthController extends Controller
             $profileData = $user->siswa->load('kelas.jurusan');
         } elseif (in_array($user->role, ['guru', 'kepala_sekolah']) && $user->guru) {
             $profileData = $user->guru;
+            $profileData->setAttribute('is_kepala_jurusan', Jurusan::where('kepala_jurusan_id', $user->guru->id)->exists());
             if ($user->role === 'guru' && $user->isWaliKelas()) {
                 $profileData->load([
                     'waliKelasAktif.kelas' => function ($query) {

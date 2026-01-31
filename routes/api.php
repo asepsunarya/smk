@@ -32,8 +32,8 @@ use App\Http\Controllers\Api\KepalaSekolah\RekapController;
 use App\Http\Controllers\Api\Siswa\RaporSiswaController;
 use App\Http\Controllers\Api\Siswa\NilaiSiswaController;
 use App\Http\Controllers\Api\LookupController;
-use App\Http\Controllers\Api\Admin\UkkController;
 use App\Http\Controllers\Api\Admin\UkkEventController;
+use App\Http\Controllers\Api\Guru\UkkController as GuruUkkController;
 use App\Http\Controllers\Api\Admin\P5Controller as AdminP5Controller;
 use App\Http\Controllers\Api\Admin\CetakRaporController;
 
@@ -103,8 +103,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('pkl', PklController::class);
         Route::get('ukk-events/lookup', [UkkEventController::class, 'lookup']);
         Route::apiResource('ukk-events', UkkEventController::class);
-        Route::apiResource('ukk', UkkController::class);
-        Route::get('ukk/jurusan/{jurusan}', [UkkController::class, 'byJurusan']);
         Route::get('p5/available-guru', [AdminP5Controller::class, 'availableGuru']);
         Route::get('p5/available-siswa', [AdminP5Controller::class, 'availableSiswa']);
         Route::get('p5/{p5}/kelompok', [AdminP5Controller::class, 'getKelompok']);
@@ -157,6 +155,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('nilai-ekstrakurikuler/siswa', [NilaiEkstrakurikulerController::class, 'getSiswa']);
         Route::get('nilai-ekstrakurikuler/my-ekstrakurikuler', [NilaiEkstrakurikulerController::class, 'myEkstrakurikuler']);
         Route::post('nilai-ekstrakurikuler/batch-store', [NilaiEkstrakurikulerController::class, 'batchStore']);
+
+        // Nilai UKK (hanya untuk guru yang kepala jurusan)
+        Route::get('ukk/jurusan-options', [GuruUkkController::class, 'jurusanOptions']);
+        Route::get('ukk/kelas', [GuruUkkController::class, 'getKelas']);
+        Route::get('ukk/siswa', [GuruUkkController::class, 'getSiswa']);
+        Route::apiResource('ukk', GuruUkkController::class);
     });
 
     // Wali Kelas routes (guru with active WaliKelas assignment only)

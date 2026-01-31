@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 /**
  * GuruController
@@ -17,6 +16,19 @@ use Illuminate\Validation\Rule;
  */
 class GuruController extends Controller
 {
+    /**
+     * Normalize nuptk: simpan NULL ketika kosong atau hanya strip (tanpa angka).
+     */
+    private function normalizeNuptk(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+        if (!preg_match('/\d/', $value)) {
+            return null;
+        }
+        return $value;
+    }
     /**
      * Display a listing of guru.
      *
@@ -62,7 +74,19 @@ class GuruController extends Controller
     {
         $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'nuptk' => ['required', 'string', 'unique:guru'],
+            'nuptk' => [
+                'nullable',
+                'string',
+                'regex:/^[\d-]*$/',
+                function ($attribute, $value, $fail) {
+                    if ($value === null || trim($value) === '' || !preg_match('/\d/', $value)) {
+                        return;
+                    }
+                    if (Guru::where('nuptk', $value)->exists()) {
+                        $fail('NUPTK sudah digunakan.');
+                    }
+                },
+            ],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
@@ -72,13 +96,16 @@ class GuruController extends Controller
             'pendidikan_terakhir' => ['required', 'string'],
             'bidang_studi' => ['required', 'string'],
             'tanggal_masuk' => ['required', 'date'],
+        ], [
+            'nuptk.regex' => 'NUPTK hanya boleh berisi angka dan tanda strip (-).',
         ]);
 
         DB::beginTransaction();
         try {
+            $nuptk = $this->normalizeNuptk($request->nuptk);
             $guru = Guru::create([
                 'user_id' => null, // No user linked yet
-                'nuptk' => $request->nuptk,
+                'nuptk' => $nuptk,
                 'nama_lengkap' => $request->nama_lengkap,
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,
@@ -141,7 +168,19 @@ class GuruController extends Controller
     {
         $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'nuptk' => ['required', 'string', Rule::unique('guru')->ignore($guru->id)],
+            'nuptk' => [
+                'nullable',
+                'string',
+                'regex:/^[\d-]*$/',
+                function ($attribute, $value, $fail) use ($guru) {
+                    if ($value === null || trim($value) === '' || !preg_match('/\d/', $value)) {
+                        return;
+                    }
+                    if (Guru::where('nuptk', $value)->where('id', '!=', $guru->id)->exists()) {
+                        $fail('NUPTK sudah digunakan.');
+                    }
+                },
+            ],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tempat_lahir' => ['required', 'string'],
             'tanggal_lahir' => ['required', 'date'],
@@ -151,20 +190,23 @@ class GuruController extends Controller
             'pendidikan_terakhir' => ['required', 'string'],
             'bidang_studi' => ['required', 'string'],
             'status' => ['required', 'in:aktif,non_aktif,pensiun'],
+        ], [
+            'nuptk.regex' => 'NUPTK hanya boleh berisi angka dan tanda strip (-).',
         ]);
 
         DB::beginTransaction();
         try {
+            $nuptk = $this->normalizeNuptk($request->nuptk);
             // Update NUPTK in user if provided and different
-            if ($request->has('nuptk') && $guru->user && $guru->user->nuptk !== $request->nuptk) {
+            if ($guru->user && $guru->user->nuptk !== $nuptk) {
                 $guru->user->update([
-                    'nuptk' => $request->nuptk,
+                    'nuptk' => $nuptk,
                 ]);
             }
 
             // Update nama_lengkap in guru to match user name if user exists, otherwise use form value
             $updateData = [
-                'nuptk' => $request->nuptk,
+                'nuptk' => $nuptk,
                 'nama_lengkap' => $guru->user ? $guru->user->name : ($request->nama_lengkap ?? $guru->nama_lengkap),
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,

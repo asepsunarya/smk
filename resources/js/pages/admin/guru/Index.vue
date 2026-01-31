@@ -90,21 +90,20 @@
             />
             <div class="space-y-1">
               <label for="nuptk" class="block text-sm font-medium text-gray-700">
-                NUPTK <span class="text-red-500">*</span>
+                NUPTK
               </label>
               <div class="relative">
                 <input
                   id="nuptk"
                   v-model="form.nuptk"
                   type="text"
-                  placeholder="Masukkan NUPTK"
-                  required
+                  placeholder="Angka saja atau - (kosongkan jika tidak ada)"
                   @input="handleNuptkInput"
                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': errors.nuptk }"
                 />
               </div>
-              <p v-if="errors.nuptk" class="text-sm text-red-600">{{ errors.nuptk }}</p>
+              <p v-if="errors.nuptk" class="text-sm text-red-600">{{ Array.isArray(errors.nuptk) ? errors.nuptk[0] : errors.nuptk }}</p>
             </div>
             <FormField
               v-model="form.jenis_kelamin"
@@ -471,8 +470,8 @@ const submitForm = async () => {
     // Only send required fields
     const payload = {
       nama_lengkap: form.nama_lengkap,
-      nuptk: form.nuptk || '-', // Allow '-' as NUPTK
-      jenis_kelamin: form.jenis_kelamin,
+        nuptk: form.nuptk ?? '', // Kosong/hanya strip -> disimpan null, tampil "-" saat get
+        jenis_kelamin: form.jenis_kelamin,
       tempat_lahir: form.tempat_lahir,
       tanggal_lahir: form.tanggal_lahir,
       agama: form.agama,
@@ -580,20 +579,9 @@ const handleSearch = (searchTerm) => {
 }
 
 const handleNuptkInput = (event) => {
-  // Only allow numbers and minus sign
-  let value = event.target.value.replace(/[^0-9-]/g, '')
-  // Ensure minus sign only appears once and at the beginning
-  const minusCount = (value.match(/-/g) || []).length
-  if (minusCount > 1) {
-    // Keep only the first minus sign
-    value = value.replace(/-/g, (match, offset) => offset === 0 ? match : '')
-  }
-  // If minus is not at the beginning, remove it
-  if (value.includes('-') && !value.startsWith('-')) {
-    value = value.replace(/-/g, '')
-  }
+  // Hanya angka dan tanda strip (-)
+  const value = event.target.value.replace(/[^0-9-]/g, '')
   form.nuptk = value
-  // Update the input value to reflect the filtered value
   event.target.value = value
 }
 

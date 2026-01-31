@@ -13,6 +13,7 @@ export const menuConfig = {
         { label: 'Kelola Mapel', to: '/admin/mata-pelajaran', icon: 'book' },
         { label: 'Kelola Ekskul', to: '/admin/ekstrakurikuler', icon: 'star' },
         { label: 'Kelola PKL', to: '/admin/pkl', icon: 'briefcase' },
+        { label: 'Kelola UKK', to: '/admin/ukk-events', icon: 'clipboard-check' },
         { label: 'Tahun Ajaran', to: '/admin/tahun-ajaran', icon: 'calendar' }
       ]
     },
@@ -20,20 +21,10 @@ export const menuConfig = {
       type: 'dropdown',
       title: 'Kelola P5',
       icon: 'lightbulb',
-      routes: ['/admin/p5', '/admin/p5/kelompok'],
+      routes: ['/admin/p5', '/admin/p5/kelompok', '/admin/ukk-events'],
       items: [
         { label: 'Data P5', to: '/admin/p5', icon: 'document-duplicate' },
-        { label: 'Kelompok P5', to: '/admin/p5/kelompok', icon: 'user-group' }
-      ]
-    },
-    {
-      type: 'dropdown',
-      title: 'Kelola UKK',
-      icon: 'clipboard-check',
-      routes: ['/admin/ukk-events', '/admin/ukk'],
-      items: [
-        { label: 'Data UKK', to: '/admin/ukk-events', icon: 'document-duplicate' },
-        { label: 'Nilai UKK', to: '/admin/ukk', icon: 'clipboard-check' }
+        { label: 'Kelompok P5', to: '/admin/p5/kelompok', icon: 'user-group' },
       ]
     },
     {
@@ -58,7 +49,8 @@ export const menuConfig = {
         { label: 'Capaian Pembelajaran', to: '/guru/capaian-pembelajaran', icon: 'target' },
         { label: 'Kelola Nilai Sumatif', to: '/guru/nilai', icon: 'clipboard-check' },
         { label: 'Nilai Ekstrakurikuler', to: '/guru/nilai-ekstrakurikuler', icon: 'star' },
-        { label: 'Nilai P5', to: '/guru/p5', icon: 'lightbulb' }
+        { label: 'Nilai P5', to: '/guru/p5', icon: 'lightbulb' },
+        { label: 'Nilai UKK', to: '/guru/nilai-ukk', icon: 'clipboard-check', kepalaJurusanOnly: true }
       ]
     }
   ],

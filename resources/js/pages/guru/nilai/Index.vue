@@ -576,6 +576,13 @@ const fetchCP = async () => {
       const response = await axios.get(`/guru/capaian-pembelajaran/mapel/${selectedMapel.value}`)
       const allCP = response.data.capaian_pembelajaran || []
       
+      // Hanya tampilkan STS/SAS di dropdown jika ada CP aktif di database
+      const hasActiveSTS = allCP.some(cp => cp.kode_cp === 'STS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const hasActiveSAS = allCP.some(cp => cp.kode_cp === 'SAS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const specialOptions = []
+      if (hasActiveSTS) specialOptions.push(stsOption)
+      if (hasActiveSAS) specialOptions.push(sasOption)
+      
       // Filter CP by:
       // 1. fase (tingkat) must match kelas tingkat
       // 2. is_active must be true
@@ -613,18 +620,18 @@ const fetchCP = async () => {
       label: `${cp.kode_cp} - ${cp.deskripsi?.substring(0, 50)}${cp.deskripsi?.length > 50 ? '...' : ''}`
     }))
     
-    // Combine: STS, SAS, then other CP
-    cpOptions.value = [stsOption, sasOption, ...cpOptionsMapped]
+    // Combine: STS/SAS (hanya yang aktif), then other CP
+    cpOptions.value = [...specialOptions, ...cpOptionsMapped]
     
     // Only show warning if there are no CP at all (including STS/SAS)
-    if (cpOptionsMapped.length === 0 && cpOptions.value.length === 2) {
+    if (cpOptionsMapped.length === 0 && cpOptions.value.length === 0) {
       // Only STS and SAS available, no other CP - this is fine, no warning needed
     } else if (cpOptions.value.length === 0) {
       toast.warning('Tidak ada Capaian Pembelajaran untuk tingkat dan semester yang dipilih')
     }
   } catch (error) {
     console.error('Failed to fetch capaian pembelajaran:', error)
-    // Even on error, still show STS and SAS
+    // On error, show STS and SAS as fallback (user can retry)
     const stsOption = {
       id: 'sts',
       kode_cp: 'STS',
@@ -846,8 +853,7 @@ const onFormSemesterChange = async () => {
     try {
       const kelas = formKelasOptions.value.find(k => k.id == formKelas.value)
       if (!kelas || !kelas.tingkat) {
-        // Even if kelas has no tingkat, still show STS and SAS
-        formCPOptions.value = [stsOption, sasOption]
+        formCPOptions.value = []
         return
       }
       
@@ -859,6 +865,13 @@ const onFormSemesterChange = async () => {
       
       const response = await axios.get(`/guru/capaian-pembelajaran/mapel/${formMapel.value}`)
       const allCP = response.data.capaian_pembelajaran || []
+      
+      // Hanya tampilkan STS/SAS jika ada CP aktif di database
+      const hasActiveSTS = allCP.some(cp => cp.kode_cp === 'STS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const hasActiveSAS = allCP.some(cp => cp.kode_cp === 'SAS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const specialOptions = []
+      if (hasActiveSTS) specialOptions.push(stsOption)
+      if (hasActiveSAS) specialOptions.push(sasOption)
       
       // Filter CP by fase, is_active, and exclude STS/SAS if they exist in database
       const filteredCP = allCP.filter(cp => {
@@ -873,16 +886,14 @@ const onFormSemesterChange = async () => {
         label: `${cp.kode_cp} - ${cp.deskripsi?.substring(0, 50)}${cp.deskripsi?.length > 50 ? '...' : ''}`
       }))
       
-      // Combine: STS, SAS, then other CP
-      formCPOptions.value = [stsOption, sasOption, ...cpOptionsMapped]
+      // Combine: STS/SAS (hanya yang aktif), then other CP
+      formCPOptions.value = [...specialOptions, ...cpOptionsMapped]
     } catch (error) {
       console.error('Failed to fetch CP:', error)
-      // Even on error, still show STS and SAS
-      formCPOptions.value = [stsOption, sasOption]
+      formCPOptions.value = []
     }
   } else {
-    // If filters are not complete, still show STS and SAS
-    formCPOptions.value = [stsOption, sasOption]
+    formCPOptions.value = []
   }
 }
 
@@ -1134,6 +1145,13 @@ const editNilai = async (nilai) => {
       const cpResponse = await axios.get(`/guru/capaian-pembelajaran/mapel/${formMapel.value}`)
       const allCP = cpResponse.data.capaian_pembelajaran || []
       
+      // Hanya tampilkan STS/SAS jika ada CP aktif di database
+      const hasActiveSTS = allCP.some(cp => cp.kode_cp === 'STS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const hasActiveSAS = allCP.some(cp => cp.kode_cp === 'SAS' && cp.is_active === true && String(cp.fase) === tingkat)
+      const specialOptions = []
+      if (hasActiveSTS) specialOptions.push(stsOption)
+      if (hasActiveSAS) specialOptions.push(sasOption)
+      
       // Filter CP by fase, is_active, and exclude STS/SAS if they exist in database
       const filteredCP = allCP.filter(cp => {
         return cp.fase === tingkat && cp.is_active !== false && cp.kode_cp !== 'STS' && cp.kode_cp !== 'SAS'
@@ -1147,7 +1165,7 @@ const editNilai = async (nilai) => {
         label: `${cp.kode_cp} - ${cp.deskripsi?.substring(0, 50)}${cp.deskripsi?.length > 50 ? '...' : ''}`
       }))
       
-      formCPOptions.value = [stsOption, sasOption, ...cpOptionsMapped]
+      formCPOptions.value = [...specialOptions, ...cpOptionsMapped]
       
       // Set CP value from nilai data after options are loaded
       // Check if nilai has STS or SAS CP
@@ -1164,8 +1182,7 @@ const editNilai = async (nilai) => {
         formCP.value = nilai.capaian_pembelajaran_id || selectedCP.value
       }
     } else {
-      // Even if kelas has no tingkat, still show STS and SAS
-      formCPOptions.value = [stsOption, sasOption]
+      formCPOptions.value = []
       
       // Set CP value from nilai data
       if (nilai.capaian_pembelajaran) {
@@ -1183,8 +1200,7 @@ const editNilai = async (nilai) => {
     }
   } catch (error) {
     console.error('Failed to fetch CP:', error)
-    // Even on error, still show STS and SAS
-    formCPOptions.value = [stsOption, sasOption]
+    formCPOptions.value = []
     
     // Set CP value from nilai data
     if (nilai.capaian_pembelajaran) {

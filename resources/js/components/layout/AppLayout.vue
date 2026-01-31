@@ -197,7 +197,16 @@ const roleText = computed(() => {
 
 const currentUserMenus = computed(() => {
   const role = authStore.user?.role
-  const base = menuConfig[role] || []
+  let base = menuConfig[role] || []
+  // For guru: hide "Nilai UKK" unless user is kepala jurusan
+  if (role === 'guru') {
+    base = base.map((section) => {
+      if (section.items && !authStore.isKepalaJurusan) {
+        return { ...section, items: section.items.filter((it) => !it.kepalaJurusanOnly) }
+      }
+      return section
+    })
+  }
   if (role === 'guru' && authStore.isWaliKelas) {
     const wali = (menuConfig.wali_kelas || []).filter((g) => g.title !== 'Pembelajaran')
     return [...base, ...wali]

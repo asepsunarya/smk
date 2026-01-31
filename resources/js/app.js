@@ -25,8 +25,8 @@ import JurusanIndex from './pages/admin/jurusan/Index.vue'
 import MataPelajaranIndex from './pages/admin/mata-pelajaran/Index.vue'
 import EkstrakurikulerIndex from './pages/admin/ekstrakurikuler/Index.vue'
 import PklIndex from './pages/admin/pkl/Index.vue'
-import UkkIndex from './pages/admin/ukk/Index.vue'
 import UkkEventsIndex from './pages/admin/ukk-events/Index.vue'
+import GuruNilaiUkkIndex from './pages/guru/nilai-ukk/Index.vue'
 import AdminP5Index from './pages/admin/p5/Index.vue'
 import AdminP5KelompokIndex from './pages/admin/p5/Kelompok.vue'
 import CetakRaporHasilBelajarIndex from './pages/admin/cetak-rapor/hasil-belajar/Index.vue'
@@ -197,11 +197,6 @@ const routes = [
         component: UkkEventsIndex
       },
       {
-        path: 'ukk',
-        name: 'admin.ukk.index',
-        component: UkkIndex
-      },
-      {
         path: 'p5',
         name: 'admin.p5.index',
         component: AdminP5Index
@@ -263,6 +258,11 @@ const routes = [
         path: 'nilai-ekstrakurikuler',
         name: 'guru.nilai-ekstrakurikuler.index',
         component: NilaiEkstrakurikulerIndex
+      },
+      {
+        path: 'nilai-ukk',
+        name: 'guru.nilai-ukk.index',
+        component: GuruNilaiUkkIndex
       },
       {
         path: 'p5',
