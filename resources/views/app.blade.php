@@ -14,6 +14,29 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        <!-- Tailwind CDN fallback: load only if built Tailwind didn't apply (e.g. Docker build tanpa config) -->
+        <script>
+        (function() {
+            function loadTailwindCdn() {
+                var s = document.createElement('script');
+                s.src = 'https://cdn.tailwindcss.com?plugins=forms';
+                s.async = false;
+                document.head.appendChild(s);
+            }
+            function isTailwindActive() {
+                var test = document.createElement('div');
+                test.className = 'bg-gray-50';
+                test.style.cssText = 'position:absolute;left:-9999px;';
+                document.body.appendChild(test);
+                var bg = getComputedStyle(test).backgroundColor;
+                document.body.removeChild(test);
+                return bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+            }
+            setTimeout(function() {
+                if (!isTailwindActive()) loadTailwindCdn();
+            }, 800);
+        })();
+        </script>
     </head>
     <body class="font-sans antialiased">
         <div id="app"></div>
