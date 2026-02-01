@@ -57,13 +57,15 @@ COPY . .
 # Copy built assets from node stage
 COPY --from=node-builder /app/public/build ./public/build
 
+# Create Laravel bootstrap/cache and storage dirs before composer (package:discover needs them)
+RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Create Laravel storage/cache dirs and set permissions
-RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Set ownership for runtime
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Entrypoint: when running with volume mount, ensure deps and permissions
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
