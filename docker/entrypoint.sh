@@ -8,7 +8,7 @@ if [ ! -f vendor/autoload.php ]; then
     composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 fi
 if [ ! -d public/build ] || [ -z "$(ls -A public/build 2>/dev/null)" ]; then
-    npm ci && npm run build
+    npm install && npm run build
 fi
 
 # Ensure storage and bootstrap/cache exist and are writable

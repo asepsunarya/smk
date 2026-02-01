@@ -8,7 +8,7 @@ COPY vite.config.js ./
 COPY resources/ ./resources/
 COPY public/ ./public/
 
-RUN npm ci && npm run build
+RUN npm install && npm run build
 
 # Stage 2: PHP-FPM application
 FROM php:8.2-fpm-alpine
