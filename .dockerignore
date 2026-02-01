@@ -1,0 +1,44 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Git
+/.git
+/.gitignore
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Laravel
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+!/storage/logs/.gitkeep
+!/storage/framework/cache/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/views/.gitkeep
+!/bootstrap/cache/.gitkeep
+
+# IDE and OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Testing and docs
+/tests
+.phpunit.result.cache
+*.md
+!README.md
+
+# Misc
+npm-debug.log
+yarn-error.log
+*.sqlite
+*.pdf
+*.docx
+*.xlsx

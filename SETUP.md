@@ -59,6 +59,69 @@ php artisan serve
 
 Visit: **http://localhost:8000**
 
+## 🐳 Menjalankan dengan Docker di Server
+
+Aplikasi bisa dijalankan di server menggunakan Docker (PHP-FPM, Nginx, MySQL).
+
+### Prasyarat
+
+- Docker dan Docker Compose terpasang di server.
+
+### Langkah
+
+1. **Clone repo** dan masuk ke direktori proyek:
+   ```bash
+   cd siakad-smk
+   ```
+
+2. **Siapkan file env** (gunakan contoh untuk Docker):
+   ```bash
+   cp .env.docker.example .env
+   ```
+   Edit `.env` dan isi:
+   - `APP_KEY` — generate dengan: `php artisan key:generate` (lokal) lalu salin, atau setelah container jalan: `docker compose exec app php artisan key:generate`
+   - `DB_PASSWORD` — password MySQL (sama dengan `MYSQL_ROOT_PASSWORD` di container)
+   - `APP_URL` — URL akses aplikasi, mis. `http://ip-server` atau `http://domain.example.com`
+   - `APP_PORT` — port di host (default `80`). Jika port 80 dipakai layanan lain, set mis. `8080` lalu akses `http://ip-server:8080`
+
+3. **Build dan jalankan container**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+4. **Generate APP_KEY** (jika belum diisi):
+   ```bash
+   docker compose exec app php artisan key:generate
+   ```
+   Lalu salin nilai `APP_KEY` dari output ke `.env` di host, dan restart: `docker compose restart app`.
+
+5. **Jalankan migrasi dan seed** (sekali):
+   ```bash
+   docker compose exec app php artisan migrate --force
+   docker compose exec app php artisan db:seed --force
+   ```
+
+6. **Permission storage** (jika ada error write):
+   ```bash
+   docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+   ```
+
+7. **Akses aplikasi** di browser: `http://<ip-server>:<APP_PORT>` (default `http://<ip-server>`).
+
+### Perintah berguna
+
+```bash
+# Lihat log
+docker compose logs -f
+
+# Masuk ke container app
+docker compose exec app sh
+
+# Artisan di container
+docker compose exec app php artisan route:list
+docker compose exec app php artisan migrate:status
+```
+
 ## 🔐 Demo Login Credentials
 
 | Role | Email | Password | Description |
