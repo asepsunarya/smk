@@ -21,6 +21,7 @@ RUN apk add --no-cache \
     freetype-dev \
     oniguruma-dev \
     icu-dev \
+    curl-dev \
     nodejs \
     npm \
     git \
