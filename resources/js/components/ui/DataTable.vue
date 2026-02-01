@@ -19,7 +19,7 @@
             v-model="searchTerm"
             type="text"
             placeholder="Cari data..."
-            class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="form-input w-full pl-3 pr-10"
           />
           <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
