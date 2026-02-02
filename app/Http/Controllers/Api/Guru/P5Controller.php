@@ -44,6 +44,18 @@ class P5Controller extends Controller
 
         $p5 = $query->orderBy('created_at', 'desc')->paginate($request->get('per_page', 15));
 
+        // Filter peserta hanya siswa di kelas yang diajar guru ini
+        if ($guru) {
+            $kelasIds = $guru->kelas_ids_yang_diajar;
+            $p5->getCollection()->transform(function ($item) use ($kelasIds) {
+                if ($item->relationLoaded('peserta')) {
+                    $filtered = $item->peserta->filter(fn ($s) => in_array($s->kelas_id, $kelasIds->toArray()));
+                    $item->setRelation('peserta', $filtered->values());
+                }
+                return $item;
+            });
+        }
+
         return response()->json($p5);
     }
 
@@ -261,6 +273,15 @@ class P5Controller extends Controller
             ->where('p5_id', $p5->id)
             ->pluck('catatan_proses', 'siswa_id')
             ->toArray();
+
+        // Filter peserta hanya siswa di kelas yang diajar guru ini
+        $user = Auth::user();
+        $guru = $user->guru;
+        if ($guru && $p5->relationLoaded('peserta')) {
+            $kelasIds = $guru->kelas_ids_yang_diajar;
+            $filtered = $p5->peserta->filter(fn ($s) => in_array($s->kelas_id, $kelasIds->toArray()));
+            $p5->setRelation('peserta', $filtered->values());
+        }
 
         return response()->json([
             'p5' => $p5,
