@@ -218,9 +218,9 @@ const pageTitle = computed(() => {
   const titles = {
     '/admin': 'Dashboard Admin',
     '/admin/siswa': 'Data Siswa',
-    '/admin/guru': 'Data Guru',
+    '/admin/guru': authStore.isWaliKelas ? 'Data Wali Kelas' : 'Data Guru',
     '/admin/kelas': 'Data Kelas',
-    '/guru': 'Dashboard Guru',
+    '/guru': authStore.isWaliKelas ? 'Dashboard Wali Kelas' : 'Dashboard Guru',
     '/guru/nilai': 'Input Nilai',
     '/wali-kelas': 'Dashboard Wali Kelas',
     '/wali-kelas/rapor': 'Rapor Kelas',
