@@ -248,6 +248,8 @@ class RaporApprovalController extends Controller
 
         try {
             $data = $this->buildRaporDataForPdf($siswa, $tahunAjaranId, $semester, $jenis);
+            $titimangsa = $request->filled('titimangsa') ? $request->titimangsa : now()->format('Y-m-d');
+            $data['tanggal_rapor'] = \Carbon\Carbon::parse($titimangsa)->locale('id');
             $pdf = Pdf::loadView('rapor.kurmer', $data);
             $pdf->setPaper([0, 0, 595.28, 935.43], 'portrait'); // F4: 210mm x 330mm
 
@@ -433,7 +435,7 @@ class RaporApprovalController extends Controller
             'nilai_ekstrakurikuler' => $nilaiEkstrakurikuler,
             'wali_kelas' => $waliKelas,
             'kepala_sekolah' => $kepalaSekolah,
-            'tanggal_rapor' => now(),
+            'tanggal_rapor' => \Carbon\Carbon::now()->locale('id'),
             'rapor_disetujui' => $raporDisetujui,
             'ttd_ks_path' => public_path('images/ttd_ks.png'),
         ];

@@ -288,6 +288,7 @@ async function cetakRapor(row) {
       semester: filters.value.semester,
       jenis: filters.value.jenis
     })
+    if (filters.value.titimangsa) params.append('titimangsa', filters.value.titimangsa)
     const res = await axios.get(`/wali-kelas/cetak-rapor/belajar/${row.id}/download?${params}`, {
       responseType: 'blob'
     })
