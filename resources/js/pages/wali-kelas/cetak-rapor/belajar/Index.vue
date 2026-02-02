@@ -47,7 +47,7 @@
           <FormField
             v-model="filters.titimangsa"
             type="date"
-            label="Titimangsa Rapor"
+            label="Titimangsa"
             :required="true"
           />
         </div>
