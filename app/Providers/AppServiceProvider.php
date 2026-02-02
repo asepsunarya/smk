@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     * Memaksa skema HTTPS agar URL aset (CSS/JS) pakai https:// saat di belakang reverse proxy.
+     */
+    public function boot(): void
+    {
+        if (str_starts_with((string) config('app.url', ''), 'https://')) {
+            URL::forceScheme('https');
+        }
+    }
+}

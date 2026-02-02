@@ -504,8 +504,6 @@ class CetakRaporController extends Controller
         $data['tahun_pelajaran_label'] = $tahunInt ? $tahunInt . '/' . ($tahunInt + 1) : '-';
         $data['nama_sekolah'] = config('app.school_name', 'SMKS Progresia Cianjur');
         $data['alamat_sekolah'] = config('app.school_address', '');
-        
-        // Titimangsa dari request atau sekarang
         $titimangsa = $request->filled('titimangsa') ? $request->titimangsa : now()->format('Y-m-d');
         $data['tanggal_rapor'] = \Carbon\Carbon::parse($titimangsa)->locale('id');
 

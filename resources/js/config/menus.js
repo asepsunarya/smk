@@ -4,17 +4,17 @@ export const menuConfig = {
       type: 'section',
       title: 'Kelola Data',
       items: [
+        { label: 'Tahun Ajaran', to: '/admin/tahun-ajaran', icon: 'calendar' },
+        { label: 'Kelola Guru', to: '/admin/guru', icon: 'user-tie' },
         { label: 'Kelola Jurusan', to: '/admin/jurusan', icon: 'bookmark' },
         { label: 'Kelola Kelas', to: '/admin/kelas', icon: 'home' },
         { label: 'Kelola Siswa', to: '/admin/siswa', icon: 'users' },
-        { label: 'Kelola Guru', to: '/admin/guru', icon: 'user-tie' },
         { label: 'Kelola Users', to: '/admin/users', icon: 'user-group' },
         { label: 'Kelola Wali Kelas', to: '/admin/wali-kelas', icon: 'user-check' },
         { label: 'Kelola Mapel', to: '/admin/mata-pelajaran', icon: 'book' },
         { label: 'Kelola Ekskul', to: '/admin/ekstrakurikuler', icon: 'star' },
         { label: 'Kelola PKL', to: '/admin/pkl', icon: 'briefcase' },
-        { label: 'Kelola UKK', to: '/admin/ukk-events', icon: 'clipboard-check' },
-        { label: 'Tahun Ajaran', to: '/admin/tahun-ajaran', icon: 'calendar' }
+        { label: 'Kelola UKK', to: '/admin/ukk-events', icon: 'clipboard-check' }
       ]
     },
     {

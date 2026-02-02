@@ -134,6 +134,7 @@
               v-model="form.tempat_lahir"
               label="Tempat Lahir"
               placeholder="Masukkan tempat lahir"
+              required
               :error="errors.tempat_lahir"
             />
             <FormField
@@ -157,6 +158,7 @@
               type="text"
               label="Anak ke"
               placeholder="Contoh: 1, 2, 3"
+              required
               :error="errors.anak_ke"
             />
             <FormField
@@ -164,6 +166,7 @@
               type="date"
               label="Tahun Masuk"
               placeholder="Pilih tanggal masuk"
+              required
               :error="errors.tanggal_masuk"
             />
             <FormField
@@ -182,6 +185,7 @@
               type="text"
               label="Sekolah Asal"
               placeholder="Contoh: SMP Negeri 1 Cianjur"
+              required
               :error="errors.sekolah_asal"
             />
           </div>
@@ -192,6 +196,7 @@
               type="textarea"
               label="Alamat"
               placeholder="Masukkan alamat lengkap"
+              required
               :error="errors.alamat"
             />
             <FormField
@@ -207,24 +212,28 @@
               v-model="form.nama_ayah"
               label="Nama Ayah"
               placeholder="Masukkan nama ayah"
+              required
               :error="errors.nama_ayah"
             />
             <FormField
               v-model="form.nama_ibu"
               label="Nama Ibu"
               placeholder="Masukkan nama ibu"
+              required
               :error="errors.nama_ibu"
             />
             <FormField
               v-model="form.pekerjaan_ayah"
               label="Pekerjaan Ayah"
               placeholder="Masukkan pekerjaan ayah"
+              required
               :error="errors.pekerjaan_ayah"
             />
             <FormField
               v-model="form.pekerjaan_ibu"
               label="Pekerjaan Ibu"
               placeholder="Masukkan pekerjaan ibu"
+              required
               :error="errors.pekerjaan_ibu"
             />
             <FormField

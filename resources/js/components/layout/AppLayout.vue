@@ -107,12 +107,12 @@
           <!-- Right side actions -->
           <div class="flex items-center space-x-4">
             <!-- Notifications -->
-            <button type="button" class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full">
+            <!-- <button type="button" class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.97 4.97a.235.235 0 0 0-.02 0 5.013 5.013 0 0 0-7.125 7.125c0 .007.007.014.01.021a6.107 6.107 0 0 1 7.135-7.146Z"></path>
               </svg>
-            </button>
+            </button> -->
 
             <!-- Profile dropdown -->
             <div class="relative">
@@ -129,9 +129,9 @@
               <!-- Dropdown menu -->
               <div v-show="showProfileMenu" 
                    class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
-                <hr class="my-1">
+                <!-- <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a> -->
+                <!-- <hr class="my-1"> -->
                 <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   Keluar
                 </button>
@@ -218,9 +218,9 @@ const pageTitle = computed(() => {
   const titles = {
     '/admin': 'Dashboard Admin',
     '/admin/siswa': 'Data Siswa',
-    '/admin/guru': 'Data Guru',
+    '/admin/guru': authStore.isWaliKelas ? 'Data Wali Kelas' : 'Data Guru',
     '/admin/kelas': 'Data Kelas',
-    '/guru': 'Dashboard Guru',
+    '/guru': authStore.isWaliKelas ? 'Dashboard Wali Kelas' : 'Dashboard Guru',
     '/guru/nilai': 'Input Nilai',
     '/wali-kelas': 'Dashboard Wali Kelas',
     '/wali-kelas/rapor': 'Rapor Kelas',

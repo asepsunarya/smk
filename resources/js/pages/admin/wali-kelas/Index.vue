@@ -320,7 +320,6 @@ const fetchGuru = async () => {
     
     if (response.data.data) {
       guruOptions.value = response.data.data
-        .filter(g => g.user?.role === 'guru')
         .map(g => ({
           id: g.id,
           name: `${g.nama_lengkap}${g.nuptk ? ' - ' + g.nuptk : ''} (Guru)`,

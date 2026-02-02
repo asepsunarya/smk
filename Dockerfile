@@ -4,7 +4,7 @@ FROM node:20-alpine AS node-builder
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-COPY vite.config.js ./
+COPY vite.config.js tailwind.config.js postcss.config.js ./
 COPY resources/ ./resources/
 COPY public/ ./public/
 

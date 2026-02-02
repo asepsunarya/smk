@@ -92,11 +92,12 @@
               v-model="form.kepala_jurusan_id"
               type="select"
               label="Kepala Jurusan"
-              placeholder="Pilih Kepala Jurusan (opsional)"
+              placeholder="Pilih Kepala Jurusan"
               :options="guruOptions"
               option-value="id"
               option-label="nama_lengkap"
               :error="errors.kepala_jurusan_id"
+              required
             />
           </div>
           <div>
