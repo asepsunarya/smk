@@ -1,399 +1,306 @@
 <template>
   <div class="py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <DataTable
-        title="Nilai UKK"
-        description="Kelola nilai UKK siswa jurusan Anda (pastikan Data UKK sudah dibuat oleh admin)"
-        :data="ukk"
-        :columns="columns"
-        :loading="loading"
-        empty-message="Belum ada nilai UKK"
-        empty-description="Data UKK dibuat oleh admin. Lalu tambah nilai per siswa."
-        :searchable="true"
-        @search="handleSearch"
-      >
-        <template #actions>
-          <button @click="openForm" class="btn btn-primary">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Input Nilai UKK
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Input nilai UKK (Uji Kompetensi Keahlian) siswa tingkat 12. Pilih kelas lalu isi nilai teori dan praktek; predikat dan nilai akhir dihitung otomatis.
+      </p>
+
+      <!-- Access Check -->
+      <div v-if="accessDenied" class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>
-            Tambah Nilai UKK
-          </button>
-        </template>
-
-        <template #cell-siswa="{ item }">
-          <div class="text-sm">
-            <div class="font-medium text-gray-900">{{ item.siswa?.nama_lengkap || '-' }}</div>
-            <div class="text-gray-500 text-xs">NIS: {{ item.siswa?.nis || '-' }}</div>
           </div>
-        </template>
-
-        <template #cell-jurusan="{ item }">
-          <div class="text-sm text-gray-900">{{ item.jurusan?.nama_jurusan || '-' }}</div>
-        </template>
-
-        <template #cell-kelas="{ item }">
-          <div class="text-sm text-gray-900">{{ item.kelas?.nama_kelas || '-' }}</div>
-        </template>
-
-        <template #cell-nama_du_di="{ item }">
-          <div class="text-sm text-gray-900">{{ item.nama_du_di || '-' }}</div>
-        </template>
-
-        <template #cell-tanggal_ujian="{ item }">
-          <div class="text-sm text-gray-900">{{ formatDate(item.tanggal_ujian) }}</div>
-        </template>
-
-        <template #cell-nilai="{ item }">
-          <div class="text-sm">
-            <div class="text-gray-900">Teori: {{ item.nilai_teori != null ? item.nilai_teori : '-' }}</div>
-            <div class="text-gray-900">Praktek: {{ item.nilai_praktek != null ? item.nilai_praktek : '-' }}</div>
-            <div class="font-medium text-gray-900 mt-1">Akhir: {{ item.nilai_akhir != null ? item.nilai_akhir : '-' }}</div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">Informasi</h3>
+            <p class="mt-2 text-sm text-yellow-700">{{ accessMessage }}</p>
           </div>
-        </template>
+        </div>
+      </div>
 
-        <template #cell-predikat="{ item }">
-          <span :class="getPredikatBadge(item.predikat)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-            {{ item.predikat || 'Belum Dinilai' }}
-          </span>
-        </template>
-
-        <template #cell-penguji_internal="{ item }">
-          <div class="text-sm">
-            <div class="text-gray-900">{{ item.penguji_internal?.nama_lengkap || '-' }}</div>
-            <div v-if="item.penguji_eksternal" class="text-xs text-gray-500">Eksternal: {{ item.penguji_eksternal }}</div>
-          </div>
-        </template>
-
-        <template #row-actions="{ item }">
-          <div class="flex items-center space-x-2">
-            <button @click="editUkk(item)" class="text-blue-600 hover:text-blue-900" title="Edit">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-            </button>
-            <button @click="confirmDelete(item)" class="text-red-600 hover:text-red-900" title="Hapus">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-            </button>
-          </div>
-        </template>
-      </DataTable>
-
-      <Modal v-model:show="showForm" :title="isEditing ? 'Edit Nilai UKK' : 'Tambah Nilai UKK'" size="lg">
-        <form @submit.prevent="submitForm" id="nilai-ukk-form" class="space-y-4">
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
-              v-model="form.jurusan_id"
-              type="select"
-              label="Jurusan"
-              placeholder="Pilih jurusan"
-              :options="jurusanOptions"
-              option-value="id"
-              option-label="nama_jurusan"
-              required
-              :error="errors.jurusan_id"
-              :disabled="isEditing"
-              @update:model-value="onJurusanChange"
-            />
-            <FormField
-              v-model="form.kelas_id"
-              type="select"
-              label="Kelas"
-              placeholder="Pilih kelas"
-              :options="kelasOptions"
-              option-value="id"
-              option-label="nama_kelas"
-              required
-              :error="errors.kelas_id"
-              :disabled="!form.jurusan_id || isEditing"
-              @update:model-value="onKelasChange"
-            />
-          </div>
-
+      <!-- Filters: Jurusan + Kelas -->
+      <div v-if="canAccess" class="mt-6 bg-white shadow rounded-lg p-6">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
-            v-model="form.siswa_id"
+            v-model="selectedJurusan"
             type="select"
-            label="Siswa"
-            placeholder="Pilih siswa"
-            :options="siswaOptions"
+            label="Jurusan"
+            placeholder="Pilih Jurusan"
+            :options="jurusanOptions"
             option-value="id"
-            option-label="label"
-            required
-            :error="errors.siswa_id"
-            :disabled="!form.kelas_id || isEditing"
+            option-label="nama_jurusan"
+            @update:model-value="onJurusanChange"
           />
+          <FormField
+            v-model="selectedKelas"
+            type="select"
+            label="Kelas"
+            placeholder="Pilih Kelas"
+            :options="kelasOptions"
+            option-value="id"
+            option-label="nama_kelas"
+            :disabled="!selectedJurusan"
+            @update:model-value="onKelasChange"
+          />
+        </div>
+      </div>
 
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
-              v-model="form.nilai_teori"
-              type="number"
-              label="Nilai Teori"
-              placeholder="0-100"
-              min="0"
-              max="100"
-              :error="errors.nilai_teori"
-            />
-            <FormField
-              v-model="form.nilai_praktek"
-              type="number"
-              label="Nilai Praktek"
-              placeholder="0-100"
-              min="0"
-              max="100"
-              :error="errors.nilai_praktek"
-            />
-          </div>
+      <!-- Loading -->
+      <div v-if="loading && canAccess" class="mt-6 bg-white shadow rounded-lg p-8 text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-2 text-sm text-gray-500">Memuat data...</p>
+      </div>
 
-          <div v-if="form.nilai_teori != null && form.nilai_teori !== '' && form.nilai_praktek != null && form.nilai_praktek !== ''" class="bg-blue-50 p-4 rounded-lg">
-            <div class="text-sm text-gray-700">
-              <div class="font-medium mb-1">Perhitungan:</div>
-              <div>Nilai Akhir: <span class="font-semibold">{{ calculateNilaiAkhir() }}</span> (30% Teori + 70% Praktek)</div>
-              <div>Predikat: <span class="font-semibold">{{ calculatePredikat() }}</span></div>
-            </div>
-          </div>
+      <!-- No event / empty state -->
+      <div v-else-if="canAccess && selectedKelas && !loading && eventMessage" class="mt-6 bg-white shadow rounded-lg p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Data UKK belum ada</h3>
+        <p class="mt-1 text-sm text-gray-500">{{ eventMessage }}</p>
+      </div>
 
-          <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeForm" class="btn btn-secondary">Batal</button>
-            <button type="submit" :disabled="submitting" class="btn btn-primary">
-              {{ submitting ? 'Menyimpan...' : (isEditing ? 'Perbarui' : 'Simpan') }}
+      <!-- Table -->
+      <div v-else-if="canAccess && selectedKelas && siswaList.length > 0" class="mt-6 bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6 overflow-x-auto">
+          <table class="w-full divide-y divide-gray-200 min-w-[800px]">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">No</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DU/DI</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penguji</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai Teori</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai Praktek</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai Akhir</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Predikat</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="(row, index) in siswaList" :key="row.id" class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm text-center text-gray-500">{{ index + 1 }}</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="font-medium text-gray-900">{{ row.nama_lengkap }}</div>
+                  <div class="text-xs text-gray-500">NIS: {{ row.nis || '-' }}</div>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-900">{{ namaDuDi }}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">{{ pengujiLabel }}</td>
+                <td class="px-4 py-3">
+                  <input
+                    v-model.number="row.form.nilai_teori"
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0-100"
+                    class="block w-20 mx-auto text-center rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-2 py-1.5"
+                  />
+                </td>
+                <td class="px-4 py-3">
+                  <input
+                    v-model.number="row.form.nilai_praktek"
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0-100"
+                    class="block w-20 mx-auto text-center rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-2 py-1.5"
+                  />
+                </td>
+                <td class="px-4 py-3 text-sm text-center text-gray-900 font-medium">
+                  {{ hitungNilaiAkhir(row.form) }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span :class="getPredikatBadge(hitungPredikat(row.form))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    {{ hitungPredikat(row.form) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="mt-6 flex justify-end">
+            <button
+              type="button"
+              :disabled="saving"
+              class="btn btn-primary"
+              @click="simpanSemua"
+            >
+              <svg v-if="saving" class="inline-block animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ saving ? 'Menyimpan...' : 'Simpan' }}
             </button>
           </div>
-        </form>
-      </Modal>
+        </div>
+      </div>
 
-      <ConfirmDialog
-        v-model:show="showDeleteConfirm"
-        title="Hapus Nilai UKK"
-        :message="`Hapus nilai UKK untuk ${selectedUkk?.siswa?.nama_lengkap}?`"
-        confirm-text="Ya, Hapus"
-        type="error"
-        :loading="deleting"
-        @confirm="doDelete"
-      />
+      <!-- Pilih kelas dulu -->
+      <div v-else-if="canAccess && !selectedKelas" class="mt-6 bg-white shadow rounded-lg p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Pilih Filter</h3>
+        <p class="mt-1 text-sm text-gray-500">Pilih Jurusan dan Kelas untuk menampilkan daftar siswa dan input nilai UKK.</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '../../../stores/auth'
-import DataTable from '../../../components/ui/DataTable.vue'
-import Modal from '../../../components/ui/Modal.vue'
 import FormField from '../../../components/ui/FormField.vue'
-import ConfirmDialog from '../../../components/ui/ConfirmDialog.vue'
 
 const API = '/guru/ukk'
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
-const ukk = ref([])
+
+const canAccess = ref(false)
+const accessDenied = ref(false)
+const accessMessage = ref('')
 const loading = ref(false)
-const showForm = ref(false)
-const isEditing = ref(false)
-const submitting = ref(false)
-const deleting = ref(false)
-const showDeleteConfirm = ref(false)
-const selectedUkk = ref(null)
-const errors = ref({})
-
-const filters = reactive({ search: '' })
-
-const form = reactive({
-  id: null,
-  jurusan_id: '',
-  kelas_id: '',
-  siswa_id: '',
-  nilai_teori: '',
-  nilai_praktek: ''
-})
-
+const saving = ref(false)
+const selectedJurusan = ref('')
+const selectedKelas = ref('')
 const jurusanOptions = ref([])
 const kelasOptions = ref([])
-const siswaOptions = ref([])
+const siswaList = ref([])
+const namaDuDi = ref('')
+const pengujiLabel = ref('')
+const eventMessage = ref('')
 
-const columns = [
-  { key: 'siswa', label: 'Siswa' },
-  { key: 'jurusan', label: 'Jurusan' },
-  { key: 'kelas', label: 'Kelas' },
-  { key: 'nama_du_di', label: 'DU/DI' },
-  { key: 'tanggal_ujian', label: 'Tanggal Ujian' },
-  { key: 'nilai', label: 'Nilai' },
-  { key: 'predikat', label: 'Predikat' },
-  { key: 'penguji_internal', label: 'Penguji' },
-  { key: 'actions', label: 'Aksi' }
-]
-
-function calculateNilaiAkhir () {
+function hitungNilaiAkhir (form) {
   const t = form.nilai_teori
   const p = form.nilai_praktek
-  if (t == null || t === '' || p == null || p === '') return '-'
+  if (t === '' || t == null || p === '' || p == null) return '-'
   const n = (parseFloat(t) * 0.3) + (parseFloat(p) * 0.7)
   return n.toFixed(2)
 }
 
-function calculatePredikat () {
-  const n = calculateNilaiAkhir()
+function hitungPredikat (form) {
+  const n = hitungNilaiAkhir(form)
   if (n === '-') return '-'
   return parseFloat(n) >= 75 ? 'Kompeten' : 'Belum Kompeten'
 }
 
 function getPredikatBadge (predikat) {
-  if (!predikat) return 'bg-gray-100 text-gray-800'
+  if (!predikat || predikat === '-') return 'bg-gray-100 text-gray-800'
   return predikat === 'Kompeten' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
 }
 
-function formatDate (d) {
-  if (!d) return '-'
-  return new Date(d).toLocaleDateString('id-ID')
-}
-
-async function fetchUkk () {
-  loading.value = true
-  try {
-    const params = new URLSearchParams()
-    if (filters.search) params.append('search', filters.search)
-    params.append('per_page', 100)
-    const res = await axios.get(`${API}?${params}`)
-    ukk.value = res.data?.data ?? res.data ?? []
-  } catch (e) {
-    toast.error(e.response?.status === 403 ? 'Akses ditolak. Hanya Kepala Jurusan.' : 'Gagal mengambil nilai UKK')
-    ukk.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch (q) {
-  filters.search = q
-  fetchUkk()
-}
-
-async function fetchJurusan () {
+async function checkAccess () {
   try {
     const r = await axios.get(`${API}/jurusan-options`)
     jurusanOptions.value = r.data ?? []
-  } catch (_) {
-    jurusanOptions.value = []
+    canAccess.value = true
+    accessDenied.value = false
+  } catch (e) {
+    if (e.response?.status === 403) {
+      canAccess.value = false
+      accessDenied.value = true
+      accessMessage.value = e.response?.data?.message ?? 'Akses Nilai UKK hanya untuk Kepala Jurusan.'
+      toast.warning(accessMessage.value)
+      router.replace('/guru')
+    } else {
+      toast.error('Gagal memuat data')
+    }
   }
 }
 
-async function fetchKelas (jurusanId) {
-  if (!jurusanId) { kelasOptions.value = []; return }
+function onJurusanChange () {
+  selectedKelas.value = ''
+  kelasOptions.value = []
+  siswaList.value = []
+  eventMessage.value = ''
+  if (!selectedJurusan.value) return
+  fetchKelas()
+}
+
+function onKelasChange () {
+  siswaList.value = []
+  eventMessage.value = ''
+  if (!selectedKelas.value) return
+  loadByKelas()
+}
+
+async function fetchKelas () {
+  if (!selectedJurusan.value) return
   try {
-    const r = await axios.get(`${API}/kelas`, { params: { jurusan_id: jurusanId } })
+    const r = await axios.get(`${API}/kelas`, { params: { jurusan_id: selectedJurusan.value } })
     kelasOptions.value = r.data ?? []
   } catch (_) {
     kelasOptions.value = []
   }
 }
 
-async function fetchSiswa (kelasId) {
-  if (!kelasId) { siswaOptions.value = []; return }
+async function loadByKelas () {
+  if (!selectedKelas.value) return
+  loading.value = true
   try {
-    const r = await axios.get(`${API}/siswa`, { params: { kelas_id: kelasId } })
-    const list = r.data ?? []
-    siswaOptions.value = list.map(s => ({ id: s.id, label: `${s.nama_lengkap} (${s.nis || '-'})` }))
-  } catch (_) {
-    siswaOptions.value = []
-  }
-}
-
-function onJurusanChange () {
-  form.kelas_id = ''
-  form.siswa_id = ''
-  kelasOptions.value = []
-  siswaOptions.value = []
-  fetchKelas(form.jurusan_id)
-}
-
-function onKelasChange () {
-  form.siswa_id = ''
-  fetchSiswa(form.kelas_id)
-}
-
-function openForm () {
-  isEditing.value = false
-  selectedUkk.value = null
-  Object.assign(form, { id: null, jurusan_id: '', kelas_id: '', siswa_id: '', nilai_teori: '', nilai_praktek: '' })
-  errors.value = {}
-  kelasOptions.value = []
-  siswaOptions.value = []
-  showForm.value = true
-}
-
-function closeForm () {
-  showForm.value = false
-  fetchUkk()
-}
-
-function editUkk (item) {
-  isEditing.value = true
-  selectedUkk.value = item
-  form.id = item.id
-  form.jurusan_id = item.jurusan_id
-  form.kelas_id = item.kelas_id ?? item.kelas?.id ?? ''
-  form.siswa_id = item.siswa_id
-  form.nilai_teori = item.nilai_teori ?? ''
-  form.nilai_praktek = item.nilai_praktek ?? ''
-  errors.value = {}
-  fetchKelas(item.jurusan_id)
-  fetchSiswa(item.kelas_id ?? item.kelas?.id)
-  showForm.value = true
-}
-
-function confirmDelete (item) {
-  selectedUkk.value = item
-  showDeleteConfirm.value = true
-}
-
-async function doDelete () {
-  if (!selectedUkk.value?.id) return
-  deleting.value = true
-  try {
-    await axios.delete(`${API}/${selectedUkk.value.id}`)
-    toast.success('Nilai UKK berhasil dihapus')
-    showDeleteConfirm.value = false
-    fetchUkk()
+    const r = await axios.get(`${API}/by-kelas`, { params: { kelas_id: selectedKelas.value } })
+    if (!r.data.can_access) {
+      accessDenied.value = true
+      accessMessage.value = r.data.message ?? 'Akses ditolak.'
+      return
+    }
+    if (r.data.message && !r.data.siswa?.length) {
+      eventMessage.value = r.data.message
+      namaDuDi.value = ''
+      pengujiLabel.value = ''
+      siswaList.value = []
+      return
+    }
+    namaDuDi.value = r.data.nama_du_di ?? '-'
+    const internal = r.data.penguji_internal ?? ''
+    const eksternal = r.data.penguji_eksternal ?? ''
+    pengujiLabel.value = internal + (eksternal ? (internal ? ` / ${eksternal}` : eksternal) : '') || '-'
+    siswaList.value = (r.data.siswa ?? []).map(s => ({
+      ...s,
+      form: {
+        nilai_teori: s.ukk?.nilai_teori ?? '',
+        nilai_praktek: s.ukk?.nilai_praktek ?? '',
+      },
+    }))
+    eventMessage.value = ''
   } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Gagal menghapus nilai UKK')
+    toast.error(e.response?.data?.message ?? 'Gagal mengambil data')
+    siswaList.value = []
   } finally {
-    deleting.value = false
+    loading.value = false
   }
 }
 
-async function submitForm () {
-  errors.value = {}
-  submitting.value = true
+async function simpanSemua () {
+  if (!selectedKelas.value) {
+    toast.error('Pilih kelas terlebih dahulu')
+    return
+  }
+  saving.value = true
   try {
-    if (isEditing.value) {
-      await axios.put(`${API}/${form.id}`, {
-        nilai_teori: form.nilai_teori !== '' && form.nilai_teori != null ? parseInt(form.nilai_teori, 10) : null,
-        nilai_praktek: form.nilai_praktek !== '' && form.nilai_praktek != null ? parseInt(form.nilai_praktek, 10) : null
-      })
-      toast.success('Nilai UKK berhasil diperbarui')
-    } else {
-      await axios.post(API, {
-        jurusan_id: form.jurusan_id,
-        kelas_id: form.kelas_id,
-        siswa_id: form.siswa_id,
-        nilai_teori: form.nilai_teori !== '' && form.nilai_teori != null ? parseInt(form.nilai_teori, 10) : null,
-        nilai_praktek: form.nilai_praktek !== '' && form.nilai_praktek != null ? parseInt(form.nilai_praktek, 10) : null
-      })
-      toast.success('Nilai UKK berhasil ditambahkan')
-    }
-    closeForm()
+    const nilai = siswaList.value.map(row => ({
+      siswa_id: row.id,
+      nilai_teori: row.form.nilai_teori !== '' && row.form.nilai_teori != null ? Number(row.form.nilai_teori) : null,
+      nilai_praktek: row.form.nilai_praktek !== '' && row.form.nilai_praktek != null ? Number(row.form.nilai_praktek) : null,
+    }))
+    const r = await axios.post(`${API}/simpan-kelas`, {
+      kelas_id: selectedKelas.value,
+      nilai,
+    })
+    toast.success(r.data?.message ?? 'Nilai UKK berhasil disimpan.')
+    await loadByKelas()
   } catch (e) {
-    if (e.response?.status === 422) {
-      errors.value = e.response.data?.errors ?? {}
-    }
     toast.error(e.response?.data?.message ?? 'Gagal menyimpan nilai UKK')
   } finally {
-    submitting.value = false
+    saving.value = false
   }
 }
 
@@ -403,7 +310,6 @@ onMounted(() => {
     router.replace('/guru')
     return
   }
-  fetchUkk()
-  fetchJurusan()
+  checkAccess()
 })
 </script>

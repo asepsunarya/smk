@@ -168,6 +168,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('ukk/jurusan-options', [GuruUkkController::class, 'jurusanOptions']);
         Route::get('ukk/kelas', [GuruUkkController::class, 'getKelas']);
         Route::get('ukk/siswa', [GuruUkkController::class, 'getSiswa']);
+        Route::get('ukk/by-kelas', [GuruUkkController::class, 'byKelas']);
+        Route::post('ukk/simpan-kelas', [GuruUkkController::class, 'simpanKelas']);
         Route::apiResource('ukk', GuruUkkController::class);
     });
 
