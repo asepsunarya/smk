@@ -33,6 +33,7 @@
             :options="tahunAjaranFilterOptions"
             option-value="id"
             option-label="label"
+            required
             @update:model-value="loadLegger"
           />
         </div>
@@ -154,8 +155,8 @@
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Pilih Kelas</h3>
-        <p class="mt-1 text-sm text-gray-500">Pilih kelas untuk menampilkan legger nilai</p>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Pilih Kelas dan Tahun Ajaran</h3>
+        <p class="mt-1 text-sm text-gray-500">Pilih kelas dan tahun ajaran untuk menampilkan legger nilai</p>
       </div>
     </div>
   </div>
@@ -216,7 +217,7 @@ const fetchTahunAjaran = async () => {
 }
 
 const loadLegger = async () => {
-  if (!filters.kelas_id) {
+  if (!filters.kelas_id || !filters.tahun_ajaran_id) {
     leggerData.value = null
     return
   }
@@ -224,9 +225,7 @@ const loadLegger = async () => {
   try {
     loading.value = true
     const params = new URLSearchParams()
-    if (filters.tahun_ajaran_id) {
-      params.append('tahun_ajaran_id', filters.tahun_ajaran_id)
-    }
+    params.append('tahun_ajaran_id', filters.tahun_ajaran_id)
 
     const response = await axios.get(`/wali-kelas/cetak-rapor/legger/${filters.kelas_id}?${params.toString()}`)
     leggerData.value = {
@@ -262,17 +261,15 @@ const getNilaiColor = (nilai) => {
 }
 
 const downloadLegger = async () => {
-  if (!filters.kelas_id) {
-    toast.warning('Pilih kelas terlebih dahulu')
+  if (!filters.kelas_id || !filters.tahun_ajaran_id) {
+    toast.warning('Pilih kelas dan tahun ajaran terlebih dahulu')
     return
   }
 
   try {
     downloading.value = true
     const params = new URLSearchParams()
-    if (filters.tahun_ajaran_id) {
-      params.append('tahun_ajaran_id', filters.tahun_ajaran_id)
-    }
+    params.append('tahun_ajaran_id', filters.tahun_ajaran_id)
 
     const response = await axios.get(`/wali-kelas/cetak-rapor/legger/${filters.kelas_id}/download?${params.toString()}`, {
       responseType: 'blob'
