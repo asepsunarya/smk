@@ -57,6 +57,12 @@
           </div>
         </template>
 
+        <template #cell-nuptk="{ item }">
+          <span class="text-sm text-gray-900">
+            {{ item.guru?.nuptk ?? item.siswa?.nis ?? item.nis ?? item.nuptk ?? '-' }}
+          </span>
+        </template>
+
         <template #row-actions="{ item }">
           <div class="flex items-center space-x-2">
             <button @click="editUser(item)" class="text-blue-600 hover:text-blue-900" title="Edit">

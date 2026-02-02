@@ -212,7 +212,7 @@
                     <span class="nama">_________________________</span>
                 </td>
                 <td style="width: 50%; text-align: left; vertical-align: top; padding-left: 48px;">
-                    <div class="ttd-tanggal">Cianjur, {{ isset($tanggal_rapor) ? (is_object($tanggal_rapor) && method_exists($tanggal_rapor, 'format') ? $tanggal_rapor->format('d F Y') : \Carbon\Carbon::parse($tanggal_rapor)->format('d F Y')) : now()->format('d F Y') }}</div>
+                    <div class="ttd-tanggal">Cianjur, {{ isset($tanggal_rapor) ? (is_object($tanggal_rapor) && method_exists($tanggal_rapor, 'translatedFormat') ? $tanggal_rapor->translatedFormat('d F Y') : \Carbon\Carbon::parse($tanggal_rapor)->locale('id')->translatedFormat('d F Y')) : \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}</div>
                     Wali Kelas,<br><br><br><br>
                     <span class="nama">{{ optional($wali_kelas)->nama_lengkap ?? '_________________________' }}</span><br>
                     NUPTK. {{ optional($wali_kelas)->nuptk ?? '-' }}

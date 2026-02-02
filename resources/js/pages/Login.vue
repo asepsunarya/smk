@@ -23,16 +23,16 @@
         <form class="px-6 pb-6 space-y-4" @submit.prevent="handleLogin">
           <!-- Username Field -->
           <div class="flex items-center space-x-3">
-            <label for="email" class="text-sm font-medium text-gray-700 w-20">Username</label>
+            <label for="email" class="text-sm font-medium text-gray-700 w-20">Email</label>
             <input 
               id="email" 
               v-model="form.email"
               name="email" 
               type="text" 
-              autocomplete="username" 
+              autocomplete="email" 
               required 
               class="flex-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
-              placeholder="Masukkan username"
+              placeholder="Masukkan email"
               :class="{ 'border-red-300': errors.email }"
             >
           </div>

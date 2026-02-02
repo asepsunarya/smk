@@ -24,9 +24,11 @@ class CapaianPembelajaranController extends Controller
      */
     public function byMapel(MataPelajaran $mataPelajaran)
     {
-        $cp = CapaianPembelajaran::where('mata_pelajaran_id', $mataPelajaran->id)
-                                 ->with('tujuanPembelajaran')
-                                 ->orderBy('kode_cp')
+        $cp = CapaianPembelajaran::where('mata_pelajaran_id', $mataPelajaran->id) 
+                                ->with('tujuanPembelajaran')
+                                 ->orderBy('tingkat')
+                                 ->orderBy('semester')
+                                 ->orderBy('target')
                                  ->get();
 
         return response()->json([

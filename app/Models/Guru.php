@@ -160,4 +160,36 @@ class Guru extends Model
     {
         return $this->tanggal_masuk->diffInYears(now());
     }
+
+    /**
+     * Get kelas IDs that this guru teaches (wali kelas + kelas dari mata pelajaran yang diajar).
+     *
+     * @return \Illuminate\Support\Collection<int>
+     */
+    public function getKelasIdsYangDiajarAttribute()
+    {
+        try {
+            $kelasIds = collect();
+
+            // Kelas dimana guru jadi wali kelas
+            $kelasIds = $kelasIds->merge(
+                $this->waliKelasAktif()->pluck('kelas_id')
+            );
+
+            // Kelas yang punya mata pelajaran yang diajar guru ini
+            $mapelQuery = $this->mataPelajaran();
+            if (\Illuminate\Support\Facades\Schema::hasColumn('mata_pelajaran', 'is_active')) {
+                $mapelQuery = $mapelQuery->where('is_active', true);
+            }
+            $kelasIds = $kelasIds->merge(
+                $mapelQuery->get()->flatMap(fn ($m) => $m->kelas()->pluck('id'))
+            );
+
+            $result = $kelasIds->unique()->filter()->values();
+            return $result instanceof \Illuminate\Support\Collection ? $result : collect();
+        } catch (\Throwable $e) {
+            report($e);
+            return collect();
+        }
+    }
 }
