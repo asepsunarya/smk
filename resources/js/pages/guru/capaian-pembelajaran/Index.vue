@@ -464,6 +464,7 @@ const toast = useToast()
 // Data
 const mapelOptions = ref([])
 const allMapelOptions = ref([])
+const kelasOptions = ref([])
 const cpList = ref([])
 
 // State

@@ -224,8 +224,7 @@ const columns = [
   { key: 'tanggal_ujian', label: 'Tanggal Ujian' },
   { key: 'nilai', label: 'Nilai' },
   { key: 'predikat', label: 'Predikat' },
-  { key: 'penguji_internal', label: 'Penguji' },
-  { key: 'actions', label: 'Aksi' }
+  { key: 'penguji_internal', label: 'Penguji' }
 ]
 
 function calculateNilaiAkhir () {

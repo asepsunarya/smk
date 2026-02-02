@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\Admin\MataPelajaranController;
 use App\Http\Controllers\Api\Admin\TahunAjaranController;
 use App\Http\Controllers\Api\Admin\WaliKelasController;
 use App\Http\Controllers\Api\Admin\EkstrakurikulerController;
+use App\Http\Controllers\Api\Guru\KelasController as GuruKelasController;
+use App\Http\Controllers\Api\WaliKelas\KelasController as WaliKelasKelasController;
 use App\Http\Controllers\Api\Admin\PklController;
 use App\Http\Controllers\Api\Guru\NilaiController as GuruNilaiController;
 use App\Http\Controllers\Api\Guru\CapaianPembelajaranController;
@@ -136,6 +138,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Guru routes
     Route::middleware('role:guru')->prefix('guru')->group(function () {
+        // Kelas
+        Route::get('kelas', [GuruKelasController::class, 'index']);
+
         // Nilai Management
         Route::get('nilai/kelas/{kelas}/mapel/{mataPelajaran}', [GuruNilaiController::class, 'index']);
         Route::get('nilai/kelas/{kelas}/siswa', [GuruNilaiController::class, 'getSiswa']);
@@ -173,6 +178,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Wali Kelas routes (guru with active WaliKelas assignment only)
     Route::middleware('wali_kelas')->prefix('wali-kelas')->group(function () {
+        // Kelas
+        Route::get('kelas', [WaliKelasKelasController::class, 'index']);
+
         // Capaian & Tujuan Pembelajaran
         Route::get('capaian-pembelajaran/mapel/{mataPelajaran}', [CapaianPembelajaranController::class, 'byMapel']);
         Route::apiResource('capaian-pembelajaran', CapaianPembelajaranController::class);

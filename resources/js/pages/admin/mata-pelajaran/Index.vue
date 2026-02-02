@@ -117,7 +117,7 @@
       </DataTable>
 
       <!-- Form Modal -->
-      <Modal v-model:show="showForm" :title="isEditing ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran'" size="lg">
+      <Modal v-model:show="showForm" :title="isEditing ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran'" size="2xl">
         <form @submit.prevent="submitForm" id="mata-pelajaran-form" class="space-y-4">
           <!-- Kelas di paling atas -->
           <MultiSelect
