@@ -256,15 +256,22 @@ class UkkController extends Controller
             'tahun_ajaran_id' => 'required|exists:tahun_ajaran,id',
         ]);
 
+        // Ambil semua nilai UKK lewat event yang sama (jurusan + kelas + tahun ajaran)
+        // agar semua siswa yang diinput guru/wali kelas ikut tercetak, tidak hanya satu
+        $eventIds = UkkEvent::where('jurusan_id', $request->jurusan_id)
+            ->where(function ($q) use ($request) {
+                $q->whereNull('kelas_id')->orWhere('kelas_id', $request->kelas_id);
+            })
+            ->where('tahun_ajaran_id', $request->tahun_ajaran_id)
+            ->pluck('id');
+
         $ukkList = Ukk::with([
             'siswa.user',
             'kelas.jurusan',
             'tahunAjaran',
             'pengujiInternal.user',
         ])
-            ->where('jurusan_id', $request->jurusan_id)
-            ->where('kelas_id', $request->kelas_id)
-            ->where('tahun_ajaran_id', $request->tahun_ajaran_id)
+            ->whereIn('ukk_event_id', $eventIds)
             ->orderBy('siswa_id')
             ->get();
 
