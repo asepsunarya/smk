@@ -279,7 +279,9 @@ class UkkController extends Controller
             return response()->json(['message' => 'Tidak ada data nilai UKK untuk kelas dan tahun ajaran ini.'], 404);
         }
 
-        $kelas = $ukkList->first()->kelas;
+        // Pakai kelas dari request (yang dipilih user) agar nama kelas di Excel selalu tampil
+        // meskipun ada beberapa event (mis. event tanpa kelas_id + event per kelas)
+        $kelas = Kelas::with('jurusan')->find($request->kelas_id);
         $tahunAjaran = $ukkList->first()->tahunAjaran;
         $namaSekolah = config('app.school_name', 'SMK');
         $namaKelas = $kelas ? $kelas->nama_kelas : '';
