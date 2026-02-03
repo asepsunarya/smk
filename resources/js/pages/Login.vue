@@ -40,17 +40,36 @@
           <!-- Password Field -->
           <div class="flex items-center space-x-3">
             <label for="password" class="text-sm font-medium text-gray-700 w-20">Password</label>
-            <input 
-              id="password" 
-              v-model="form.password"
-              name="password" 
-              type="password" 
-              autocomplete="current-password" 
-              required 
-              class="flex-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
-              placeholder="Masukkan password"
-              :class="{ 'border-red-300': errors.password }"
-            >
+            <div class="flex-1 relative">
+              <input 
+                id="password" 
+                v-model="form.password"
+                name="password" 
+                :type="showPassword ? 'text' : 'password'"
+                autocomplete="current-password" 
+                required 
+                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                placeholder="Masukkan password"
+                :class="{ 'border-red-300': errors.password }"
+              >
+
+              <button
+                type="button"
+                @click="toggleShowPassword"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
+              >
+                <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 3C5.5 3 1.7 6.2.9 10c.8 3.8 4.6 7 9.1 7s8.3-3.2 9.1-7c-.8-3.8-4.6-7-9.1-7zM10 14a4 4 0 110-8 4 4 0 010 8z" />
+                  <path d="M10 8a2 2 0 100 4 2 2 0 000-4z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.94 10.94 0 0112 20c-4.5 0-8.3-3.2-9.1-7 .5-2.2 1.8-4.1 3.6-5.4" />
+                  <path d="M1 1l22 22" />
+                  <path d="M9.88 9.88A3 3 0 0014.12 14.12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Error messages -->
@@ -121,6 +140,12 @@ const form = reactive({
   password: '',
   remember: false
 })
+
+const showPassword = ref(false)
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
 
 const handleLogin = async () => {
   loading.value = true
